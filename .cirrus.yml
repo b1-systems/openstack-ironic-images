@@ -1,0 +1,40 @@
+---
+# NOTE: That didn't work, thus use of instance with nested virtualization enabled.
+
+# container:
+#   image: ubuntu:20.04
+#   kvm: true
+
+compute_engine_instance:
+  image_project: cirrus-images
+  image: family/docker-kvm
+  platform: linux
+  cpu: 4
+  memory: 16G
+  disk: 100
+  nested_virtualization: true
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+  HOME: "$CIRRUS_WORKING_DIR"
+  PACKER_TMP_DIR: "$CIRRUS_WORKING_DIR/.packer.d"
+
+task:
+  install_script:
+    - apt-get update
+    - apt-get install -y qemu-kvm curl git software-properties-common python3-pip
+    - curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
+    - apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com focal main"
+    - apt-add-repository --yes --update ppa:ansible/ansible
+    - apt-get install -y packer ansible
+
+  submodules_script:
+    - git submodule init
+    - git submodule update
+
+  validate_packer_configurations_script:
+    - packer validate -syntax-only ubuntu-20.04-amd64.json
+    - packer validate -syntax-only ubuntu-20.04-amd64-minimal.json
+
+  build_ubuntu2004_amd64_script: packer build ubuntu-20.04-amd64.json
+  build_ubuntu2004_amd64_minimal_script: packer build ubuntu-20.04-amd64-minimal.json

@@ -1,0 +1,70 @@
+#cloud-config
+autoinstall:
+  apt:
+    geoip: false
+    preserve_sources_list: false
+    primary:
+    - arches: [amd64, i386]
+      uri: http://de.archive.ubuntu.com/ubuntu
+    - arches: [default]
+      uri: http://ports.ubuntu.com/ubuntu-ports
+  identity: {hostname: ubuntu, password: $6$MZ73HofDMEK.Z5hR$dGcKEMKc1WJ2Z77S4ePbUirPIdvn.pBzaONtqV.ySlb5769prQH8utoxE6Zy9.piVa7GWRuvWmhcDti2oi8Fs/,
+    realname: ubuntu, username: ubuntu}
+  keyboard: {layout: us, toggle: null, variant: ''}
+  locale: en_US.UTF-8
+  network:
+    version: 2
+    ethernets:
+      ens3:
+        dhcp4: true
+  ssh:
+    allow-pw: true
+    authorized-keys: []
+    install-server: true
+  storage:
+    config:
+    - {ptable: gpt, path: /dev/sda, wipe: superblock-recursive,
+      preserve: false, name: '', grub_device: false, type: disk, id: disk-sda}
+    - {device: disk-sda, size: 536870912, wipe: superblock, flag: boot, number: 1,
+      preserve: false, grub_device: true, type: partition, id: partition-0}
+    - {fstype: fat32, volume: partition-0, preserve: false, type: format, id: format-0}
+    - {device: disk-sda, size: 32212254720, wipe: superblock, flag: '', number: 2,
+      preserve: false, type: partition, id: partition-1}
+    - {fstype: ext4, volume: partition-1, preserve: false, type: format, id: format-2}
+    - {device: format-2, path: /, type: mount, id: mount-2}
+    - {device: disk-sda, size: 5368709120, wipe: superblock, flag: '', number: 3,
+      preserve: false, type: partition, id: partition-2}
+    - {fstype: ext4, volume: partition-2, preserve: false, type: format, id: format-3}
+    - {device: format-3, path: /home, type: mount, id: mount-3}
+    - {device: disk-sda, size: 10737418240, wipe: superblock, flag: swap, number: 4,
+      preserve: false, type: partition, id: partition-3}
+    - {fstype: swap, volume: partition-3, preserve: false, type: format, id: format-4}
+    - {device: format-4, path: '', type: mount, id: mount-4}
+    - {device: disk-sda, size: 32212254720, wipe: superblock, flag: '', number: 5,
+      preserve: false, type: partition, id: partition-4}
+    - {fstype: ext4, volume: partition-4, preserve: false, type: format, id: format-5}
+    - {device: format-5, path: /var, type: mount, id: mount-5}
+    - {device: disk-sda, size: 5368709120, wipe: superblock, flag: '', number: 6,
+      preserve: false, type: partition, id: partition-5}
+    - {fstype: ext4, volume: partition-5, preserve: false, type: format, id: format-6}
+    - {device: format-6, path: /tmp, type: mount, id: mount-6}
+    - {device: disk-sda, size: 2147483648, wipe: superblock, flag: '', number: 7,
+      preserve: false, type: partition, id: partition-6}
+    - {fstype: ext4, volume: partition-6, preserve: false, type: format, id: format-7}
+    - {device: format-7, path: /var/log/audit, type: mount, id: mount-7}
+    - {device: disk-sda, size: 18788384768, wipe: superblock, flag: '', number: 8,
+      preserve: false, type: partition, id: partition-7}
+    - {fstype: ext4, volume: partition-7, preserve: false, type: format, id: format-8}
+    - {device: format-8, path: /var/lib/docker, type: mount, id: mount-8}
+    - {device: format-0, path: /boot/efi, type: mount, id: mount-0}
+    swap: {swap: 0}
+  packages:
+    - python
+    - htop
+    - vim
+    - bridge-utils
+    - ifenslave
+    - ifupdown
+    - vlan
+    - gnupg
+  version: 1
