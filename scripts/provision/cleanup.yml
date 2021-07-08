@@ -4,19 +4,13 @@
   connection: local
   gather_facts: true
 
+  pre_tasks:
+    - include_vars:
+        file: "{{ ansible_os_family }}.yml"
+
   vars:
     ansible_python_interpreter: /usr/bin/python3
 
   tasks:
-    - name: Set python3 as default
-      command: update-alternatives --install /usr/bin/python python /usr/bin/python3 1  # noqa 301
-      become: true
-
-    # NOTE: This must be the last task. It will uninstall Ansible.
-    - name: Purge python2 environment
-      apt:
-        name: python
-        state: absent
-        autoremove: true
-        purge: true
-      become: true
+    - name: Include distribution specific cleanup tasks
+      include_tasks: "cleanup-{{ ansible_os_family }}.yml"
