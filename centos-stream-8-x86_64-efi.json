@@ -2,7 +2,7 @@
   "builders": [
     {
       "boot_command": "{{ user `boot_command` }}",
-      "boot_wait": "5s",
+      "boot_wait": "10s",
       "cpus": "{{ user `cpus` }}",
       "disk_size": "{{ user `disk_size` }}",
       "headless": "{{ user `headless` }}",
@@ -49,7 +49,7 @@
   ],
   "variables": {
     "box_basename": "centos-stream-8",
-    "build_directory": "./builds",
+    "build_directory": "/dev/shm/centos8/",
     "build_timestamp": "2021-04",
     "cpus": "2",
     "disk_size": "153600",
@@ -59,8 +59,8 @@
     "http_directory": "{{ template_dir }}/http",
     "http_proxy": "{{ env `http_proxy` }}",
     "https_proxy": "{{ env `https_proxy` }}",
-    "iso_checksum": "a91f636d2854fc75812b49e5ea1ed3957dd0fa179cb38b94952862be7682118d",
-    "iso_name": "CentOS-Stream-8-x86_64-20210727-dvd1.iso",
+    "iso_checksum": "file:https://mirrors.edge.kernel.org/centos/8-stream/isos/x86_64/CHECKSUM",
+    "iso_name": "CentOS-Stream-8-x86_64-latest-dvd1.iso",
     "ks_path": "ks.cfg",
     "memory": "2048",
     "mirror": "http://mirrors.kernel.org/centos",
@@ -74,7 +74,7 @@
   "post-processors": [
     {
       "type": "compress",
-      "output": "centos-stream-8-x86_64-efi.gz",
+      "output": "/dev/shm/centos-stream-8-x86_64-efi.gz",
       "keep_input_artifact": false
     }
   ]

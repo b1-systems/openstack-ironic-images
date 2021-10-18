@@ -50,6 +50,7 @@ apt-get -y purge fonts-ubuntu-console || true;
 echo "autoremoving packages and cleaning apt data"
 apt-get -y autoremove;
 apt-get -y clean;
+apt-get -y install python3-jinja2
 
 echo "remove /usr/share/doc/"
 rm -rf /usr/share/doc/*
