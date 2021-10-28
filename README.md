@@ -4,9 +4,9 @@ This repository is used to manage build recipes for creating images for use on b
 
 ## Download
 
-Images are downloadable at the following URL:
+Images are downloadable at the following URLs:
 
-https://minio.services.osism.tech/openstack-ironic-images/
+* https://minio.services.osism.tech/openstack-ironic-images/ubuntu-20.04-amd64-efi.gz
 
 ## Files
 
