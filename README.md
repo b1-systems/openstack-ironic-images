@@ -2,6 +2,16 @@
 
 This repository is used to manage build recipes for creating images for use on baremetal systems.
 
+| ID  | OS         | Version | Architecture | Disk Layout  | Extra  |
+|-----|------------|---------|--------------|--------------|--------|
+| 001 | Almalinux  | 8.4     | x86_64       |              |        |
+| 002 | CentOS     | 8       | x86_64       |              |        |
+| 003 | Rockylinux | 8.4     | x86_64       |              |        |
+| 004 | Ubuntu     | 20.04   | x86_64       |              |        |
+| 005 | Ubuntu     | 20.04   | x86_64       |              |        |
+| 006 | Ubuntu     | 20.04   | x86_64       |              |        |
+| 007 | Ubuntu     | 20.04   | x86_64       |              |        |
+
 ## Download
 
 Images are downloadable at the following URLs:
