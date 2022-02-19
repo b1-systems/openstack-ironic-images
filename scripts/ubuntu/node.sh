@@ -16,8 +16,13 @@ echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
 echo "install packages"
 apt-get install --yes \
-  ifupdown \
-  python3-pip \
+  cloud-guest-utils \
+  cloud-init \
+  cloud-initramfs-copymods \
+  cloud-initramfs-dyn-netconf \
+  git \
+  gnupg \
+  htop \
   python3-argcomplete \
   python3-crypto \
   python3-dnspython \
@@ -27,23 +32,13 @@ apt-get install --yes \
   python3-lockfile \
   python3-netaddr \
   python3-ntlm-auth \
+  python3-pip \
   python3-requests-kerberos \
   python3-requests-ntlm \
   python3-selinux \
   python3-winrm \
   python3-xmltodict \
-  htop \
-  vim \
-  bridge-utils \
-  ifenslave \
-  ifupdown \
-  vlan \
-  gnupg \
-  cloud-init \
-  cloud-guest-utils \
-  cloud-initramfs-copymods \
-  cloud-initramfs-dyn-netconf \
-  git
+  vim
 
 # cloud init config
 echo "cloud init config"
