@@ -81,7 +81,7 @@ echo "ansible-playbook cleanup.yml"
 /usr/local/bin/ansible-playbook -i localhost, /home/install/cleanup.yml
 
 echo "remove provisioner scripts"
-for i in cleanup Debian provision cleanup-Debian; do rm /home/install/${i}.yml; done
+for i in cleanup Debian node cleanup-Debian; do rm -f /home/install/${i}.yml; done
 
 echo "remove .ansible directory for user ubuntu, created during ansible runs in provision.sh and cleanup.sh"
 rm -rf /home/install/.ansible
