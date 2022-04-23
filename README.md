@@ -6,6 +6,12 @@ This repository is used to manage build recipes for creating images for use on b
 |------------|---------|--------------|
 | Ubuntu     | 20.04   | x86_64       |
 
+## Build
+
+```
+packer build ubuntu-20.04-amd64.json
+```
+
 ## Download
 
 Prebuilt images can be downloaded from https://minio.services.osism.tech/openstack-ironic-images/.
