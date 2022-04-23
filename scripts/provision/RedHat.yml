@@ -1,3 +1,0 @@
----
-cleanup_packages_distribution:
-  - xorg-x11-xauth
