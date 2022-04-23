@@ -58,12 +58,12 @@
       "execute_command": "echo 'install' | {{.Vars}} sudo -S -E sh -eux '{{.Path}}'",
       "expect_disconnect": true,
       "scripts": [
-        "{{ template_dir }}/scripts/common/minimize.sh",
+        "{{ template_dir }}/scripts/ubuntu/update.sh",
         "{{ template_dir }}/scripts/common/sshd.sh",
-        "{{ template_dir }}/scripts/ubuntu/cleanup.sh",
-        "{{ template_dir }}/scripts/ubuntu/provision.sh",
         "{{ template_dir }}/scripts/ubuntu/sudoers.sh",
-        "{{ template_dir }}/scripts/ubuntu/update.sh"
+        "{{ template_dir }}/scripts/ubuntu/provision.sh",
+        "{{ template_dir }}/scripts/ubuntu/cleanup.sh",
+        "{{ template_dir }}/scripts/common/minimize.sh"
       ],
       "type": "shell"
     }
