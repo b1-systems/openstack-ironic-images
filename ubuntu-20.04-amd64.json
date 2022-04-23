@@ -5,7 +5,7 @@
         "<wait>c<wait>",
         "linux /install/vmlinuz",
         " auto",
-        " netcfg/get_domain=osism.test",
+        " netcfg/get_domain=osism.xyz",
         " netcfg/get_hostname=install",
         " console-setup/ask_detect=false",
         " console-setup/layoutcode=us",
