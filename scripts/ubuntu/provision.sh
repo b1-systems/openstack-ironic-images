@@ -22,22 +22,8 @@ apt-get install --yes \
   cloud-initramfs-dyn-netconf \
   git \
   gnupg \
-  htop \
-  python3-argcomplete \
-  python3-crypto \
-  python3-dnspython \
-  python3-jmespath \
-  python3-kerberos \
-  python3-libcloud \
-  python3-lockfile \
   python3-netaddr \
-  python3-ntlm-auth \
   python3-pip \
-  python3-requests-kerberos \
-  python3-requests-ntlm \
-  python3-selinux \
-  python3-winrm \
-  python3-xmltodict \
   vim
 
 # cloud init config
@@ -56,7 +42,7 @@ echo "remove ansible package"
 apt-get remove --yes ansible
 
 echo "install ansible via pip3"
-pip3 install --no-cache-dir 'ansible>=2.10'
+pip3 install --no-cache-dir 'ansible==5.6.0'
 
 echo "mkdir /usr/share/ansible for collections"
 mkdir -p /usr/share/ansible
