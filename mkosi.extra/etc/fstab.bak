@@ -1,0 +1,7 @@
+LABEL=root / ext4 rw,defaults 0 1
+LABEL=ESP /efi vfat defaults,noauto,x-systemd.automount,x-systemd.idle-timeout=10 0 2
+LABEL=home /home ext4 defaults,noauto,x-systemd.automount,x-systemd.idle-timeout=10 0 2
+LABEL=var /var ext4 defaults,noauto,x-systemd.automount,x-systemd.idle-timeout=10 0 2
+LABEL=var-tmp /var/tmp ext4 defaults,noauto,x-systemd.automount,x-systemd.idle-timeout=10 0 2
+LABEL=var-lib-docker /var/lib/docker defaults,noauto,x-systemd.automount,x-systemd.idle-timeout=10 0 2
+LABEL=var-log-audit /var/log/audit defaults,noauto,x-systemd.automount,x-systemd.idle-timeout=10 0 2

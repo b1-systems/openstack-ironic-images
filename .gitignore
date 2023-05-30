@@ -4,3 +4,10 @@ http/preseed*.cfg
 packer_cache
 http/ks*.cfg
 images
+
+mkosi.cache/*
+!mkosi.cache/.keep
+mkosi.output/*
+!mkosi.output/.keep
+mkosi.workspace/*
+!mkosi.workspace/.keep
