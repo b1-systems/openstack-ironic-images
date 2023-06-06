@@ -17,12 +17,17 @@ jobs:
       - run: sudo apt-get -y update
       - uses: tecolicom/actions-use-any-tools@v1
         with:
-          apt: coreutils dosfstools e2fsprogs file gdisk lvm2 mkosi mount qemu-utils rsync systemd-container util-linux
+          apt: coreutils dosfstools e2fsprogs file gdisk lvm2 mount qemu-utils rsync systemd-container util-linux
       - run: printf 'IMAGE_ID=%s-%s-%s\n' "$DISTRIBUTION" "$RELEASE" "$RUNNER_ARCH" >> "$GITHUB_ENV"
       - run: printf 'IMAGE_VERSION=%(%Y-%m-%d)T\n' "-1" >> "$GITHUB_ENV"
       - run: printf 'IMAGE_OUTPUT_DIR=%s~%s\n' "$DISTRIBUTION" "$RELEASE" >> "$GITHUB_ENV"
       - run: printf 'IMAGE_NAME=%s_%s\n' "$IMAGE_ID" "$IMAGE_VERSION" >> "$GITHUB_ENV"
       - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+      - run: pip install -r requirements.txt
       - uses: actions/cache@v3
         with:
           path: mkosi.cache
