@@ -5,3 +5,5 @@ LABEL=var /var ext4 defaults,noauto,x-systemd.automount 0 2
 LABEL=var-tmp /var/tmp ext4 defaults,noauto,x-systemd.automount 0 2
 LABEL=var-lib-docker /var/lib/docker ext4 defaults,noauto,x-systemd.growfs,x-systemd.automount 0 2
 LABEL=var-log-audit /var/log/audit ext4 defaults,noauto,x-systemd.automount 0 2
+
+tmpfs /tmp tmpfs defaults,mode=1777,strictatime,nosuid,nodev,size=50%,nr_inodes=1m 0 0
