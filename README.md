@@ -4,18 +4,14 @@ This repository is used to manage build recipes for creating images for use on b
 
 | OS         | Version | Architecture |
 |------------|---------|--------------|
-| Ubuntu     | 20.04   | x86_64       |
+| Ubuntu     | 22.04   | x86_64       |
 
 ## Build
 
-```
-packer build ubuntu-20.04-amd64.json
+```shell
+sudo mkosi --force build
 ```
 
 ## Download
 
-Prebuilt images can be downloaded from https://minio.services.osism.tech/openstack-ironic-images/.
-
-There is always a file compressed with GZIP and the file it contains in uncompressed form.
-
-If possible please download the compressed file.
+Files can be downloaded as releases here in the repository. Both as `.raw` and `.qcow2`.
