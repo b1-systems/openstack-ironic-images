@@ -127,5 +127,6 @@ sync
 
 cleanup
 
+printf 'Converting %s to %s...\n' "$RAW_FILE" "$QCOW2_FILE"
 qemu-img convert -c -O qcow2 "$RAW_FILE" "$QCOW2_FILE"
 chown "$SUDO_UID:$SUDO_GID" "$RAW_FILE" "$QCOW2_FILE"
