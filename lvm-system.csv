@@ -1,0 +1,10 @@
+# the file system label has a max size of 16 chars
+# the FS_UUID is a well-known one. See https://uapi-group.org/specifications/specs/discoverable_partitions_specification/
+# LV_NAME SIZE FS_TYPE FS_LABEL FS_UUID
+root   10G ext4 root           4f68bce3-e8cd-4db1-96e7-fbcaf984b709
+home    2G ext4 home           933ac7e1-2eb4-4f13-b844-0e14e2aef915
+var    10G ext4 var            4d21b016-b534-45c2-a9fb-5c16e091fd2d
+tmp     5G ext4 var-tmp        7ec6f557-3bc5-4aca-b293-16ef5df639d1
+docker 30G ext4 var-lib-docker 0fc63daf-8483-4772-8e79-3d69d8477de4
+audit   1G ext4 var-log-audit  0fc63daf-8483-4772-8e79-3d69d8477de4
+swap    8G swap swap           0657fd6d-a4ab-43c4-84e5-0933c84b4f4f
