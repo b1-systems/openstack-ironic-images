@@ -4,6 +4,7 @@ name: CI
 'on':
   schedule:
     - cron: "0 0 * * *"
+  workflow_call:
 
 jobs:
   build:
