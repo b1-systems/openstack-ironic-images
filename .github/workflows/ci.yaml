@@ -17,7 +17,7 @@ jobs:
       - run: sudo apt-get -y update
       - uses: tecolicom/actions-use-any-tools@v1
         with:
-          apt: mkosi qemu-utils
+          apt: coreutils dosfstools e2fsprogs file gdisk lvm2 mkosi mount qemu-utils rsync systemd-container util-linux
       - run: printf 'IMAGE_ID=%s-%s-%s\n' "$DISTRIBUTION" "$RELEASE" "$RUNNER_ARCH" >> "$GITHUB_ENV"
       - run: printf 'IMAGE_VERSION=%(%Y-%m-%d)T\n' "-1" >> "$GITHUB_ENV"
       - run: printf 'IMAGE_OUTPUT_DIR=%s~%s\n' "$DISTRIBUTION" "$RELEASE" >> "$GITHUB_ENV"
