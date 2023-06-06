@@ -27,8 +27,8 @@ jobs:
         with:
           path: mkosi.cache
           key: ${{ env.IMAGE_ID }}
-      - run: sudo mkosi --image-version "$IMAGE_VERSION" --image-id "$IMAGE_ID" summary
-      - run: sudo mkosi --image-version "$IMAGE_VERSION" --image-id "$IMAGE_ID" --force build
+      - run: sudo mkosi --mirror http://azure.archive.ubuntu.com/ubuntu --image-version "$IMAGE_VERSION" --image-id "$IMAGE_ID" summary
+      - run: sudo mkosi --mirror http://azure.archive.ubuntu.com/ubuntu --image-version "$IMAGE_VERSION" --image-id "$IMAGE_ID" --force build
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ env.IMAGE_NAME }}.manifest
