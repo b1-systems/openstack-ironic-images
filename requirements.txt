@@ -1,1 +1,1 @@
-mkosi
+git+https://github.com/systemd/mkosi.git@v12#egg=mkosi

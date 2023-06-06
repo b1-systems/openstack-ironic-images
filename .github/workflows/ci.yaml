@@ -14,16 +14,19 @@ jobs:
       DISTRIBUTION: ubuntu
       RELEASE: jammy
     steps:
+      - run: sudo apt-get -y update
+      - uses: tecolicom/actions-use-any-tools@v1
+        with:
+          apt: mkosi qemu-utils
       - run: printf 'IMAGE_ID=%s-%s-%s\n' "$DISTRIBUTION" "$RELEASE" "$RUNNER_ARCH" >> "$GITHUB_ENV"
-      - run: printf 'IMAGE_VERSION=%(%Y-%m-%d)T.%s\n' "-1" "$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
+      - run: printf 'IMAGE_VERSION=%(%Y-%m-%d)T\n' "-1" >> "$GITHUB_ENV"
       - run: printf 'IMAGE_OUTPUT_DIR=%s~%s\n' "$DISTRIBUTION" "$RELEASE" >> "$GITHUB_ENV"
       - run: printf 'IMAGE_NAME=%s_%s\n' "$IMAGE_ID" "$IMAGE_VERSION" >> "$GITHUB_ENV"
-      - run: sudo apt-get -y update
-      - uses: tecolicom/actions-use-apt-tools@v1
-        with:
-          tools: qemu-utils
-      - uses: systemd/mkosi@v14
       - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: mkosi.cache
+          key: ${{ env.IMAGE_ID }}
       - run: sudo mkosi --image-version "$IMAGE_VERSION" --image-id "$IMAGE_ID" --force build
       - uses: actions/upload-artifact@v3
         with:
