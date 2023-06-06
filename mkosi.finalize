@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eoux
+set -eou
 
 # BUILDROOT="$PWD/mkosi.workspace/$RANDOM/root"
 # OUTPUTDIR="$PWD/mkosi.output/ubuntu~jammy"
@@ -70,6 +70,8 @@ declare -r VG_NAME='system'
 declare -r LVM_DEFINITION_FILE="lvm-${VG_NAME}.csv"
 declare -r ROOT_MNT_DIR="${BUILDROOT}.raw"
 declare -x -r MKE2FS_CONFIG="${BUILDROOT}/etc/mke2fs.conf"
+
+env
 
 rm -rf "$QCOW2_FILE" "$RAW_FILE" "$ROOT_MNT_DIR"
 mkdir -p "$ROOT_MNT_DIR"
