@@ -1,1 +1,22 @@
 #!/bin/bash
+
+# Linux kernel x86 boot executable bzImage, version 5.15.0-73-generic …
+read -r _ _ _ _ _ _ _ KVER _ < <(file -bL "/boot/vmlinuz")
+
+for _dir in BOOT systemd Linux; do
+    mkdir -p "/boot/EFI/$_dir"
+done
+for _path in systemd/systemd-bootx64.efi BOOT/BOOTX64.efi; do
+    cp /usr/lib/systemd/boot/efi/systemd-bootx64.efi "/boot/EFI/$_path"
+done
+mkdir -p /boot/loader/entries
+dd if=/dev/random of=/boot/loader/random-seed bs=512 count=1
+
+dracut --kver "$KVER"
+
+printf 'title      Ubuntu 22.04 LTS (OSISM HV)
+version    %s
+efi        /EFI/Linux/linux-%s.efi
+' "$KVER" "$KVER" > "/boot/loader/entries/${KVER}.conf"
+
+ 
