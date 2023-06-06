@@ -4,3 +4,5 @@ mkosi.output/*
 !mkosi.output/.keep
 mkosi.workspace/*
 !mkosi.workspace/.keep
+.venv/*
+!.venv/.keep
