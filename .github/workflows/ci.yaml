@@ -11,11 +11,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - run: sudo apt -y update
-      - run: sudo apt -y install qemu-utils
+      - uses: tecolicom/actions-use-apt-tools@v1
+        with:
+          tools: qemu-utils
       - uses: systemd/mkosi@v14
       - uses: actions/checkout@v3
-      - run: sudo mkosi build --image-version "$(printf '%(%Y-%m-%d)T.%s' "-1" "$GITHUB_RUN_NUMBER")" --force
+      - run: sed -i -e '' mkosi.conf
+      - run: sudo mkosi --image-version "$(printf '%(%Y-%m-%d)T.%s' "-1" "$GITHUB_RUN_NUMBER")" --force build
       - uses: actions/upload-artifact@v3
         with:
-          path: mkosi.output/ubuntu~jammy/*.*
+          path: |2
+            mkosi.output/*/*.raw
+            mkosi.output/*/*.qcow2
+            mkosi.output/*/*.manifest
