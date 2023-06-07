@@ -15,7 +15,8 @@ jobs:
       RELEASE: jammy
     steps:
       - run: sudo apt-get -y update
-      - uses: tecolicom/actions-use-any-tools@v1
+      - name: Install host dependencies with APT
+        uses: tecolicom/actions-use-any-tools@v1
         with:
           apt: >2
             acl
@@ -32,31 +33,42 @@ jobs:
             rsync
             systemd-container
             util-linux
-      - run: printf 'IMAGE_ID=%s-%s-%s\n' "$DISTRIBUTION" "$RELEASE" "$RUNNER_ARCH" >> "$GITHUB_ENV"
-      - run: printf 'IMAGE_VERSION=%(%Y-%m-%d)T\n' "-1" >> "$GITHUB_ENV"
-      - run: printf 'IMAGE_OUTPUT_DIR=%s~%s\n' "$DISTRIBUTION" "$RELEASE" >> "$GITHUB_ENV"
-      - run: printf 'IMAGE_NAME=%s_%s\n' "$IMAGE_ID" "$IMAGE_VERSION" >> "$GITHUB_ENV"
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - name: Set image variables
+        run: |2
+          printf 'IMAGE_ID=%s-%s-%s\n' "$DISTRIBUTION" "$RELEASE" "$RUNNER_ARCH" >> "$GITHUB_ENV"
+          printf 'IMAGE_VERSION=%(%Y-%m-%d)T\n' "-1" >> "$GITHUB_ENV"
+          printf 'IMAGE_OUTPUT_DIR=%s~%s\n' "$DISTRIBUTION" "$RELEASE" >> "$GITHUB_ENV"
+          printf 'IMAGE_NAME=%s_%s\n' "$IMAGE_ID" "$IMAGE_VERSION" >> "$GITHUB_ENV"
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Setup python for mkosi
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'
           cache: 'pip'
         id: cp10
-      - run: pip install -r requirements.txt
-      - uses: actions/cache@v3
+      - name: Install mkosi with PIP
+        run: pip install -r requirements.txt
+      - name: Cache/Restore mkosi.cache
+        uses: actions/cache@v3
         with:
           path: mkosi.cache
           key: ${{ env.IMAGE_ID }}
-      - run: sudo ${{ steps.cp10.outputs.python-path }} -m mkosi --mirror http://azure.archive.ubuntu.com/ubuntu --image-version "$IMAGE_VERSION" --image-id "$IMAGE_ID" summary
-      - run: sudo ${{ steps.cp10.outputs.python-path }} -m mkosi --mirror http://azure.archive.ubuntu.com/ubuntu --image-version "$IMAGE_VERSION" --image-id "$IMAGE_ID" --force build
-      - uses: actions/upload-artifact@v3
+      - name: Show build summary
+        run: sudo ${{ steps.cp10.outputs.python-path }} -m mkosi --mirror http://azure.archive.ubuntu.com/ubuntu --image-version "$IMAGE_VERSION" --image-id "$IMAGE_ID" summary
+      - name: Build image
+        run: sudo ${{ steps.cp10.outputs.python-path }} -m mkosi --mirror http://azure.archive.ubuntu.com/ubuntu --image-version "$IMAGE_VERSION" --image-id "$IMAGE_ID" --force build
+      - name: Upload manifest
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.IMAGE_NAME }}.manifest
           path: mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.manifest
           if-no-files-found: error
-      - uses: actions/upload-artifact@v3
+      - name: Upload QCOW2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.IMAGE_NAME }}.qcow2
           path: mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.qcow2
           if-no-files-found: error
-      - run: sudo setfacl -R -m "u:$UID:rwx" mkosi.cache            
+      - name: Make mkosi.cache cachable for GitHub
+        run: sudo setfacl -R -m "u:$UID:rwx" mkosi.cache            
