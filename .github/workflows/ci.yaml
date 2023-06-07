@@ -35,10 +35,16 @@ jobs:
             util-linux
       - name: Set image variables
         run: |2
-          printf 'IMAGE_ID=%s-%s-%s\n' "$DISTRIBUTION" "$RELEASE" "$RUNNER_ARCH" >> "$GITHUB_ENV"
-          printf 'IMAGE_VERSION=%(%Y-%m-%d)T\n' "-1" >> "$GITHUB_ENV"
-          printf 'IMAGE_OUTPUT_DIR=%s~%s\n' "$DISTRIBUTION" "$RELEASE" >> "$GITHUB_ENV"
-          printf 'IMAGE_NAME=%s_%s\n' "$IMAGE_ID" "$IMAGE_VERSION" >> "$GITHUB_ENV"
+          printf -v IMAGE_ID '%s-%s-%s' "$DISTRIBUTION" "$RELEASE" "$RUNNER_ARCH"
+          printf -v IMAGE_VERSION '%(%Y-%m-%d)T' "-1"
+          printf -v IMAGE_OUTPUT_DIR '%s~%s' "$DISTRIBUTION" "$RELEASE"
+          printf -v IMAGE_NAME '%s_%s' "$IMAGE_ID" "$IMAGE_VERSION"
+          mapfile -t _VARIABLES < <(compgen -A variable)
+          for _var in "${_VARIABLES[@]}"; do
+            if [[ "$_var" =~ ^IMAGE_ ]]; then
+              printf '%s=%s\n' "$_var" "${!_var}"
+            fi
+          done >> "$GITHUB_ENV"
       - name: Get code
         uses: actions/checkout@v3
       - name: Setup python for mkosi
