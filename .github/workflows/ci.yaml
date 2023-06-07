@@ -64,6 +64,15 @@ jobs:
         run: sudo ${{ steps.cp10.outputs.python-path }} -m mkosi --mirror http://azure.archive.ubuntu.com/ubuntu --image-version "$IMAGE_VERSION" --image-id "$IMAGE_ID" summary
       - name: Build image
         run: sudo ${{ steps.cp10.outputs.python-path }} -m mkosi --mirror http://azure.archive.ubuntu.com/ubuntu --image-version "$IMAGE_VERSION" --image-id "$IMAGE_ID" --force build
+      - name: Compute checksums
+        run: sha512sum "${IMAGE_NAME}.manifest" "${IMAGE_NAME}.qcow2" > "${IMAGE_NAME}.sha512"
+        working-directory: mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}
+      - name: Upload checksums
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.IMAGE_NAME }}.sha512
+          path: mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.sha512
+          if-no-files-found: error
       - name: Upload manifest
         uses: actions/upload-artifact@v3
         with:
