@@ -66,9 +66,6 @@ jobs:
         run: sudo ${{ steps.cp10.outputs.python-path }} -m mkosi --mirror http://azure.archive.ubuntu.com/ubuntu --image-version "$IMAGE_VERSION" --image-id "$IMAGE_ID" summary
       - name: Build image
         run: sudo ${{ steps.cp10.outputs.python-path }} -m mkosi --mirror http://azure.archive.ubuntu.com/ubuntu --image-version "$IMAGE_VERSION" --image-id "$IMAGE_ID" --force build
-      - name: Compute checksums
-        run: sha512sum "${IMAGE_NAME}.manifest" "${IMAGE_NAME}.qcow2" > "${IMAGE_NAME}.sha512"
-        working-directory: mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}
 
       - name: Get latest release checksums
         uses: dsaltares/fetch-gh-release-asset@1.1.1
@@ -97,6 +94,9 @@ jobs:
             printf "Not matching checksums for %s and %s. Creating new release.\n" "${{ steps.last_release.outputs.version }}" "$IMAGE_VERSION"
             printf 'value=false\n' >> "$GITHUB_OUTPUT"
           fi
+        working-directory: mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}
+      - name: Compute checksums
+        run: sha512sum "${IMAGE_NAME}.manifest" "${IMAGE_NAME}.qcow2" > "${IMAGE_NAME}.sha512"
         working-directory: mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}
       - name: Release ${{ env.IMAGE_VERSION }}
         if: steps.do_releases_match.outputs.value == 'false'
