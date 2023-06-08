@@ -13,6 +13,8 @@ jobs:
     env:
       DISTRIBUTION: ubuntu
       RELEASE: jammy
+    permissions:
+      contents: write
     steps:
       - run: sudo apt-get -y update
       - name: Install host dependencies with APT
@@ -67,23 +69,37 @@ jobs:
       - name: Compute checksums
         run: sha512sum "${IMAGE_NAME}.manifest" "${IMAGE_NAME}.qcow2" > "${IMAGE_NAME}.sha512"
         working-directory: mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}
-      - name: Upload checksums
-        uses: actions/upload-artifact@v3
+
+      - name: Get latest release checksums
+        uses: dsaltares/fetch-gh-release-asset@1.1.1
         with:
-          name: ${{ env.IMAGE_NAME }}.sha512
-          path: mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.sha512
-          if-no-files-found: error
-      - name: Upload manifest
-        uses: actions/upload-artifact@v3
+          file: "${{ env.IMAGE_ID }}_.*\\.sha512"
+          regex: true
+          target: "./mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/"
+        id: last_release
+      - name: Compare releases
+        continue-on-error: true
+        id: release_matching
+        run: |2
+          read -d ' ' -r SUM_OLD_RELEASE _ < <(sha512sum "${IMAGE_ID}_${{ steps.last_release.outputs.version }}.sha512")
+          read -d ' ' -r SUM_NEW_RELEASE _ < <(sha512sum "${IMAGE_NAME}.sha512")
+          if [[ "$SUM_OLD_RELEASE" == "$SUM_NEW_RELEASE" ]]; then
+            printf "Matching checksums for %s and %s. Exiting.\n" "${{ steps.last_release.outputs.version }}" "$IMAGE_VERSION"
+            exit 0
+          else
+            printf "Not matching checksums for %s and %s. Creating new release.\n" "${{ steps.last_release.outputs.version }}" "$IMAGE_VERSION"
+            exit 1
+          fi
+        working-directory: mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}
+      - name: Release ${{ env.IMAGE_VERSION }}
+        if: steps.release_matching.conclusion == "failure"
+        uses: softprops/action-gh-release@v0.1.15
         with:
-          name: ${{ env.IMAGE_NAME }}.manifest
-          path: mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.manifest
-          if-no-files-found: error
-      - name: Upload QCOW2
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.IMAGE_NAME }}.qcow2
-          path: mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.qcow2
-          if-no-files-found: error
+          files: |2
+            mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.sha512
+            mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.manifest
+            mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.qcow2
+          tag_name: ${{ env.IMAGE_VERSION }}
       - name: Make mkosi.cache cachable for GitHub
-        run: sudo setfacl -R -m "u:$UID:rwx" mkosi.cache            
+        run: sudo setfacl -R -m "u:$UID:rwx" mkosi.cache
+        if: always()
