@@ -92,7 +92,7 @@ jobs:
           fi
         working-directory: mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}
       - name: Release ${{ env.IMAGE_VERSION }}
-        if: steps.release_matching.conclusion == "failure"
+        if: steps.release_matching.conclusion == 'failure'
         uses: softprops/action-gh-release@v0.1.15
         with:
           files: |2
