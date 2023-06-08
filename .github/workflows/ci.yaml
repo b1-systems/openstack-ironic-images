@@ -81,8 +81,13 @@ jobs:
         continue-on-error: true
         id: release_matching
         run: |2
-          read -d ' ' -r SUM_OLD_RELEASE _ < <(sha512sum "${IMAGE_ID}_${{ steps.last_release.outputs.version }}.sha512")
-          read -d ' ' -r SUM_NEW_RELEASE _ < <(sha512sum "${IMAGE_NAME}.sha512")
+          while read -d ' ' -r _checksum _filename; do
+            if [[ "$_file" == "${IMAGE_ID}_${{ steps.last_release.outputs.version }}.qcow2" ]]; then
+              SUM_OLD_RELEASE="$_checksum"
+              break
+            fi
+          done < "${IMAGE_ID}_${{ steps.last_release.outputs.version }}.sha512"
+          read -d ' ' -r SUM_NEW_RELEASE _ < <(sha512sum "${IMAGE_NAME}.qcow2")
           if [[ "$SUM_OLD_RELEASE" == "$SUM_NEW_RELEASE" ]]; then
             printf "Matching checksums for %s and %s. Exiting.\n" "${{ steps.last_release.outputs.version }}" "$IMAGE_VERSION"
             exit 0
