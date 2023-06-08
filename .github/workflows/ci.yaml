@@ -81,13 +81,14 @@ jobs:
         continue-on-error: true
         id: do_releases_match
         run: |2
-          while read -d ' ' -r _checksum _filename; do
-            if [[ "$_file" == "${IMAGE_ID}_${{ steps.last_release.outputs.version }}.qcow2" ]]; then
+          SUM_OLD_RELEASE='00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+          while read -r _checksum _filename; do
+            if [[ "$_filename" == "${IMAGE_ID}_${{ steps.last_release.outputs.version }}.qcow2" ]]; then
               SUM_OLD_RELEASE="$_checksum"
               break
             fi
           done < "${IMAGE_ID}_${{ steps.last_release.outputs.version }}.sha512"
-          read -d ' ' -r SUM_NEW_RELEASE _ < <(sha512sum "${IMAGE_NAME}.qcow2")
+          read -r SUM_NEW_RELEASE _ < <(sha512sum "${IMAGE_NAME}.qcow2")
           printf "Comparing %s with %s.\n" "$SUM_OLD_RELEASE" "$SUM_NEW_RELEASE"
           if [[ "$SUM_OLD_RELEASE" == "$SUM_NEW_RELEASE" ]]; then
             printf "Matching checksums for %s and %s. Exiting.\n" "${{ steps.last_release.outputs.version }}" "$IMAGE_VERSION"
@@ -98,7 +99,7 @@ jobs:
           fi
         working-directory: mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}
       - name: Release ${{ env.IMAGE_VERSION }}
-        if: steps.so_releases_match.outputs.value == 'false'
+        if: steps.do_releases_match.outputs.value == 'false'
         uses: softprops/action-gh-release@v0.1.15
         with:
           files: |2
