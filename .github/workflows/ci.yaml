@@ -79,7 +79,7 @@ jobs:
         id: last_release
       - name: Compare releases
         continue-on-error: true
-        id: release_matching
+        id: do_releases_match
         run: |2
           while read -d ' ' -r _checksum _filename; do
             if [[ "$_file" == "${IMAGE_ID}_${{ steps.last_release.outputs.version }}.qcow2" ]]; then
@@ -88,16 +88,17 @@ jobs:
             fi
           done < "${IMAGE_ID}_${{ steps.last_release.outputs.version }}.sha512"
           read -d ' ' -r SUM_NEW_RELEASE _ < <(sha512sum "${IMAGE_NAME}.qcow2")
+          printf "Comparing %s with %s.\n" "$SUM_OLD_RELEASE" "$SUM_NEW_RELEASE"
           if [[ "$SUM_OLD_RELEASE" == "$SUM_NEW_RELEASE" ]]; then
             printf "Matching checksums for %s and %s. Exiting.\n" "${{ steps.last_release.outputs.version }}" "$IMAGE_VERSION"
-            exit 0
+            printf 'value=true\n' >> "$GITHUB_OUTPUT"
           else
             printf "Not matching checksums for %s and %s. Creating new release.\n" "${{ steps.last_release.outputs.version }}" "$IMAGE_VERSION"
-            exit 1
+            printf 'value=false\n' >> "$GITHUB_OUTPUT"
           fi
         working-directory: mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}
       - name: Release ${{ env.IMAGE_VERSION }}
-        if: steps.release_matching.conclusion == 'failure'
+        if: steps.so_releases_match.outputs.value == 'false'
         uses: softprops/action-gh-release@v0.1.15
         with:
           files: |2
