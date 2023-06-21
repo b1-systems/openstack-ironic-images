@@ -106,6 +106,7 @@ jobs:
             mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.sha512
             mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.manifest
             mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.qcow2
+            mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.raw.gz
           tag_name: ${{ env.IMAGE_VERSION }}
       - name: Make mkosi.cache cachable for GitHub
         run: sudo setfacl -R -m "u:$UID:rwx" mkosi.cache

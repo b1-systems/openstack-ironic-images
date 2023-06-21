@@ -65,6 +65,7 @@ function cleanup() {
 }
 
 declare -x -r RAW_FILE="${OUTPUTDIR%/}/${IMAGE_ID}_${IMAGE_VERSION}.raw"
+declare -r RAW_GZ_FILE="${RAW_FILE}.gz"
 declare -r QCOW2_FILE="${RAW_FILE/.raw/.qcow2}"
 declare -r VG_NAME='system'
 declare -r LVM_DEFINITION_FILE="lvm-${VG_NAME}.csv"
@@ -129,4 +130,5 @@ cleanup
 
 printf 'Converting %s to %s...\n' "$RAW_FILE" "$QCOW2_FILE"
 qemu-img convert -c -O qcow2 "$RAW_FILE" "$QCOW2_FILE"
-chown "$SUDO_UID:$SUDO_GID" "$RAW_FILE" "$QCOW2_FILE"
+gzip --best --keep "$RAW_FILE" 
+chown "$SUDO_UID:$SUDO_GID" "$RAW_FILE" "$RAW_GZ_FILE" "$QCOW2_FILE"
