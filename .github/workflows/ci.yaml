@@ -35,6 +35,7 @@ jobs:
             rsync
             systemd-container
             util-linux
+            zstd
       - name: Set image variables
         run: |2
           printf -v IMAGE_ID '%s-%s-%s' "$DISTRIBUTION" "$RELEASE" "$RUNNER_ARCH"
@@ -106,7 +107,7 @@ jobs:
             mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.sha512
             mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.manifest
             mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.qcow2
-            mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.raw.gz
+            mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/${{ env.IMAGE_NAME }}.raw.zst
           tag_name: ${{ env.IMAGE_VERSION }}
       - name: Make mkosi.cache cachable for GitHub
         run: sudo setfacl -R -m "u:$UID:rwx" mkosi.cache
