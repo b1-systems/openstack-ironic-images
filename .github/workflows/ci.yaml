@@ -77,7 +77,6 @@ jobs:
           target: "./mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}/"
         id: last_release
       - name: Compare releases
-        continue-on-error: true
         id: do_releases_match
         run: ${{ steps.cp10.outputs.python-path }} compare_manifests.py "mkosi.output/$IMAGE_OUTPUT_DIR/${IMAGE_ID}_${{ steps.last_release.outputs.version }}.manifest" "mkosi.output/$IMAGE_OUTPUT_DIR/$IMAGE_NAME.manifest"
       - name: Compute checksums
