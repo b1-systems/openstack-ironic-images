@@ -1,2 +1,3 @@
+python-deepcompare
 github-action-utils
 git+https://github.com/systemd/mkosi.git@v14#egg=mkosi

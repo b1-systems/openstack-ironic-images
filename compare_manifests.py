@@ -4,6 +4,7 @@ import sys
 import json
 from pathlib import Path
 import github_action_utils
+import deepcompare
 
 if __name__ == "__main__":
     old_manifest_file = Path(sys.argv[1])
@@ -12,7 +13,7 @@ if __name__ == "__main__":
     old_manifest = json.loads(old_manifest_file.read_text(encoding="utf-8"))
     new_manifest = json.loads(new_manifest_file.read_text(encoding="utf-8"))
 
-    if old_manifest == new_manifest:
+    if deepcompare.compare(old_manifest, new_manifest):
         github_action_utils.set_output(name="value", value="true")
     else:
         github_action_utils.set_output(name="value", value="false")
