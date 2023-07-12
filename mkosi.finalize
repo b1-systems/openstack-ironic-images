@@ -80,8 +80,9 @@ printf 'Created temp root mnt dir %s\n' "$ROOT_MNT_DIR"
 dd "if=/dev/zero" "of=$RAW_FILE" bs=1 count=0 seek=100G
 printf 'Created raw file %s\n' "$RAW_FILE"
 
-sgdisk -n '1:0:+512M' -c '1:OSISM_HV_EFI_PARTITION' -t '1:ef00' \
-    -N '2' -c '2:OSISM_HV_LVM_PARTITION' -t '2:8e00' \
+sgdisk -n '1:0:+200M' -c '1:OSISM_HV_EFI_PARTITION' -t '1:c12a7328-f81f-11d2-ba4b-00a0c93ec93b' \
+    -n '2:0:+1G' -c '2:OSISM_HV_BOOT_PARTITION' -t '2:bc13c2ff-59e6-4262-a352-b275fd6f7172' \
+    -N '3' -c '3:OSISM_HV_LVM_PARTITION' -t '3:8e00' \
     "$RAW_FILE"
 
 LOOP_DEVICE="$(losetup -f --show -P "$RAW_FILE")"
@@ -89,6 +90,9 @@ LOOP_DEVICE="$(losetup -f --show -P "$RAW_FILE")"
 partlabel='/dev/disk/by-partlabel/OSISM_HV_EFI_PARTITION'
 wait_for_existence "$partlabel"
 mkfs.vfat -F 32 -n esp "$partlabel"
+partlabel='/dev/disk/by-partlabel/OSISM_HV_BOOT_PARTITION'
+wait_for_existence "$partlabel"
+mkfs.ext4 -FF -L boot -U bc13c2ff-59e6-4262-a352-b275fd6f7172 "$partlabel"
 partlabel='/dev/disk/by-partlabel/OSISM_HV_LVM_PARTITION'
 wait_for_existence "$partlabel"
 pvcreate -ff "$partlabel"
@@ -119,11 +123,16 @@ done <"$LVM_DEFINITION_FILE"
 mount_point="$ROOT_MNT_DIR/boot"
 printf 'Mounting %s\n' "$mount_point"
 mkdir -p "$mount_point"
+mount -orw "LABEL=boot" "$mount_point"
+mkdir -p "$mount_point/efi"
+mount_point="$ROOT_MNT_DIR/boot/efi"
+printf 'Mounting %s\n' "$mount_point"
+mkdir -p "$mount_point"
 mount -orw "LABEL=esp" "$mount_point"
 
 printf 'Moving files from %s to %s\n' "$BUILDROOT" "$ROOT_MNT_DIR"
 # boot/vmlinuz{,.old} are symlinks, but the target is a vfat partition without support
-rsync -aAXUHS --exclude 'boot/vmlinuz' --exclude 'boot/vmlinuz.old' --exclude 'proc/**' --exclude 'sys/**' --exclude 'dev/**' --exclude 'tmp/**' --exclude 'run/**' "${BUILDROOT}/" "$ROOT_MNT_DIR"
+rsync -aAXUHS --exclude 'proc/**' --exclude 'sys/**' --exclude 'dev/**' --exclude 'tmp/**' --exclude 'run/**' "${BUILDROOT}/" "$ROOT_MNT_DIR"
 sync
 
 cleanup
