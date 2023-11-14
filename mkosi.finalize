@@ -139,5 +139,5 @@ cleanup
 
 printf 'Converting %s to %s...\n' "$RAW_FILE" "$QCOW2_FILE"
 qemu-img convert -c -O qcow2 "$RAW_FILE" "$QCOW2_FILE"
-zstd --ultra -T0 "$RAW_FILE" 
+zstd --force --ultra -T0 "$RAW_FILE"
 chown "$SUDO_UID:$SUDO_GID" "$RAW_FILE" "$RAW_ZST_FILE" "$QCOW2_FILE"
