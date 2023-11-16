@@ -1,0 +1,79 @@
+#!/usr/bin/python3
+"""Remove all LUKS passphrases from the crypted
+device and bind it to the TPM instead"""
+
+import os
+import pathlib
+import subprocess
+from systemd import journal
+
+RANDOM_SEED = pathlib.Path("/boot/efi/loader/random-seed")
+CRYPTTAB = pathlib.Path("/etc/crypttab")
+
+
+def parse_device_identifier(identifier: str) -> pathlib.Path:
+    """Read an abstract device identifier like PARTLABEL=LUKS and
+    returns an actual path like /dev/disk/by-partlabel/LUKS
+
+    Else return the input string as pathlib.Path"""
+    if "=" not in identifier:
+        return_path = pathlib.Path(identifier)
+    else:
+        label, name = identifier.split(sep="=", maxsplit=1)
+        return_path = pathlib.Path(f"/dev/disk/by-{label.lower()}/{name}")
+    if not return_path.exists():
+        journal.send(f"Path {return_path} does not exists!", PRIORITY=journal.LOG_CRIT)
+        raise FileNotFoundError(return_path)
+    return return_path
+
+
+def main():
+    """Reads crypttab, binds the device in there to the TPM and
+    update the crypttab"""
+
+    journal.send(f"Parsing {CRYPTTAB}")
+    luks_name, luks_device, _, luks_options = CRYPTTAB.read_text(
+        encoding="utf-8"
+    ).split()
+
+    os.environ["PASSWORD"] = RANDOM_SEED.read_text(encoding="utf-8")
+    journal.send(f"Random seed was {os.environ['PASSWORD']}")
+
+    try:
+        systemd_cryptenroll: subprocess.CompletedProcess = subprocess.run(
+            [
+                "/usr/bin/systemd-cryptenroll",
+                "--wipe-slot=password",
+                "--tpm2-device=auto",
+                "--tpm2-pcrs=",
+                str(parse_device_identifier(luks_device)),
+            ],
+            env=os.environ,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        journal.send(systemd_cryptenroll.stdout)
+    except subprocess.CalledProcessError as e:
+        journal.send(
+            f"systemd-cryptenroll failed! Error: {e.stderr}",
+            ERRNO=e.returncode,
+            PRIORITY=journal.LOG_CRIT,
+        )
+        raise e
+
+    luks_options += ",tpm2-device=auto"
+    journal.send(
+        f"Writing {CRYPTTAB}",
+        LUKS_NAME=luks_name,
+        LUKS_DEVICE=luks_device,
+        LUKS_OPTIONS=luks_options,
+    )
+    CRYPTTAB.write_text(
+        f"{luks_name} {luks_device} none {luks_options}",
+        encoding="utf-8",
+    )
+
+
+if __name__ == "__main__":
+    main()

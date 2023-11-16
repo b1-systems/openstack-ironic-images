@@ -1,0 +1,13 @@
+[Unit]
+Description=Binding LUKS to TPM
+ConditionFirstBoot=yes
+Wants=first-boot-complete.target
+RequiresMountsFor=/boot/efi/loader/random-seed
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/bin/configure_luks_for_tpm
+ExecStart=/usr/bin/dracut --force
+
+[Install]
+WantedBy=multi-user.target

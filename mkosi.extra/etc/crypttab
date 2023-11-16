@@ -1,0 +1,1 @@
+LUKS_LVM PARTLABEL=OSISM_HV_LVM_PARTITION /boot/efi/loader/random-seed discard,luks,x-initrd.attach

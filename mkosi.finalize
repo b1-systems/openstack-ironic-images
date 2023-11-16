@@ -55,6 +55,7 @@ function cleanup() {
         lvchange --activate n "$VG_NAME"
         vgchange --activate n "$VG_NAME"
     fi
+    cryptsetup close "$LUKSLABEL" || true
     if [[ "$(losetup -n -O 'BACK-FILE' -l "$LOOP_DEVICE")" != "" ]]; then
         losetup -d "$LOOP_DEVICE"
     fi
@@ -71,8 +72,8 @@ declare -r VG_NAME='system'
 declare -r LVM_DEFINITION_FILE="lvm-${VG_NAME}.csv"
 declare -r ROOT_MNT_DIR="${BUILDROOT}.raw"
 declare -x -r MKE2FS_CONFIG="${BUILDROOT}/etc/mke2fs.conf"
-
-env
+declare -r LUKSKEYFILE="${BUILDROOT}/boot/efi/loader/random-seed"
+declare -r LUKSLABEL="LUKS_LVM"
 
 rm -rf "$QCOW2_FILE" "$RAW_FILE" "$ROOT_MNT_DIR"
 mkdir -p "$ROOT_MNT_DIR"
@@ -94,6 +95,10 @@ partlabel='/dev/disk/by-partlabel/OSISM_HV_BOOT_PARTITION'
 wait_for_existence "$partlabel"
 mkfs.ext4 -FF -L boot -U bc13c2ff-59e6-4262-a352-b275fd6f7172 "$partlabel"
 partlabel='/dev/disk/by-partlabel/OSISM_HV_LVM_PARTITION'
+wait_for_existence "$partlabel"
+cryptsetup --batch-mode --key-file "$LUKSKEYFILE" luksFormat "$partlabel"
+cryptsetup --batch-mode --key-file "$LUKSKEYFILE" open "$partlabel" "$LUKSLABEL"
+partlabel="/dev/mapper/$LUKSLABEL"
 wait_for_existence "$partlabel"
 pvcreate -ff "$partlabel"
 vgcreate "$VG_NAME" "$partlabel"
@@ -132,7 +137,7 @@ mount -orw "LABEL=esp" "$mount_point"
 
 printf 'Moving files from %s to %s\n' "$BUILDROOT" "$ROOT_MNT_DIR"
 # boot/vmlinuz{,.old} are symlinks, but the target is a vfat partition without support
-rsync -aAXUHS --exclude 'proc/**' --exclude 'sys/**' --exclude 'dev/**' --exclude 'tmp/**' --exclude 'run/**' "${BUILDROOT}/" "$ROOT_MNT_DIR"
+rsync -aAXUHS --exclude '/proc/**' --exclude '/sys/**' --exclude '/dev/**' --exclude '/tmp/**' --exclude '/run/**' "${BUILDROOT}/" "$ROOT_MNT_DIR"
 sync
 
 cleanup
