@@ -89,7 +89,7 @@ jobs:
         if: steps.do_releases_match.outputs.value == 'false'
         run: |2
           for ending in raw.zst qcow2; do
-            split --numeric-suffixes=1 --bytes="$((1024 * 1024 * 1024 * 2 - 1))" "${IMAGE_NAME}.${ending}" "${IMAGE_NAME}.${ending}.";
+            split --numeric-suffixes=1 --bytes="$((1024 * 1024 * 1024 * 1 ))" "${IMAGE_NAME}.${ending}" "${IMAGE_NAME}.${ending}.";
           done
         working-directory: mkosi.output/${{ env.IMAGE_OUTPUT_DIR }}
       - name: Compute checksums
