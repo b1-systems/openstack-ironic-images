@@ -1,15 +1,11 @@
 #!/bin/bash
 
-set -eou
+set -eoux
 
 # BUILDROOT="$PWD/mkosi.workspace/$RANDOM/root"
 # OUTPUTDIR="$PWD/mkosi.output/ubuntu~jammy"
 # IMAGE_ID="ubuntu-22.04-amd64"
 # IMAGE_VERSION="2023.05.23"
-
-if [[ "$1" != "final" ]]; then
-    exit 0
-fi
 
 # call the trap whenever something fails due to -e or on normal shell exit
 trap cleanup ERR EXIT
@@ -38,10 +34,6 @@ function is_mountpoint() {
     dev_number="$(stat -c '%d' "$_dir")"
     parent_dev_number="$(stat -c '%d' "${_dir}/..")"
     return $((dev_number == parent_dev_number))
-}
-
-function chroot_run() {
-    systemd-nspawn -q --console=pipe -D "$ROOT_MNT_DIR" -- "$@"
 }
 
 function cleanup() {
@@ -77,6 +69,7 @@ declare -r LUKSLABEL="LUKS_LVM"
 
 rm -rf "$QCOW2_FILE" "$RAW_FILE" "$ROOT_MNT_DIR"
 mkdir -p "$ROOT_MNT_DIR"
+mkdir -p "$OUTPUTDIR"
 printf 'Created temp root mnt dir %s\n' "$ROOT_MNT_DIR"
 dd "if=/dev/zero" "of=$RAW_FILE" bs=1 count=0 seek=100G
 printf 'Created raw file %s\n' "$RAW_FILE"

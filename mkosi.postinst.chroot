@@ -10,6 +10,7 @@ for _path in systemd/systemd-bootx64.efi BOOT/BOOTX64.efi; do
     cp /usr/lib/systemd/boot/efi/systemd-bootx64.efi "/boot/efi/EFI/$_path"
 done
 mkdir -p /boot/efi/loader/entries
+mkdir -p /boot/loader
 dd if=/dev/random of=/boot/loader/random-seed bs=512 count=1
 
 dracut --kver "$KVER"
