@@ -11,7 +11,8 @@ if __name__ == "__main__":
         Path("lvm-system.csv"),
         Path("mkosi.conf"),
         *Path("mkosi.extra").rglob("*"),
-        Path("mkosi.postinst"),
+        Path("mkosi.postinst.chroot"),
+        Path("mkosi.finalize")
     ]
     manifest: dict = {}
     files: list[dict[str, str]] = []

@@ -38,12 +38,15 @@ jobs:
             systemd-container
             util-linux
             zstd
+      - name: Get code
+        uses: actions/checkout@v3
       - name: Set image variables
         run: |2
           printf -v IMAGE_ID '%s-%s-%s' "$DISTRIBUTION" "$RELEASE" "$RUNNER_ARCH"
           printf -v IMAGE_VERSION '%(%Y-%m-%d)T' "-1"
           printf -v IMAGE_OUTPUT_DIR '%s~%s' "$DISTRIBUTION" "$RELEASE"
           printf -v IMAGE_NAME '%s_%s' "$IMAGE_ID" "$IMAGE_VERSION"
+          printf -v IMAGE_SOURCE_DATE_EPOCH '%d' "$(git log -n 1 --pretty=format:%cd --date=format:"%s")"
           mapfile -t _VARIABLES < <(compgen -A variable)
           for _var in "${_VARIABLES[@]}"; do
             if [[ "$_var" =~ ^IMAGE_ ]]; then
@@ -51,8 +54,6 @@ jobs:
             fi
           done >> "$GITHUB_OUTPUT"
         id: variables
-      - name: Get code
-        uses: actions/checkout@v3
       - name: Install Packages with Pip
         uses: BSFishy/pip-action@v1
         with:
@@ -70,6 +71,7 @@ jobs:
           --mirror http://azure.archive.ubuntu.com/ubuntu
           --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
           --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
+          --source-date-epoch "${{ steps.variables.outputs.IMAGE_SOURCE_DATE_EPOCH }}"
           summary
       - name: Build image
         run: >2
@@ -77,6 +79,7 @@ jobs:
           --mirror http://azure.archive.ubuntu.com/ubuntu
           --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
           --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
+          --source-date-epoch "${{ steps.variables.outputs.IMAGE_SOURCE_DATE_EPOCH }}"
           --force
           build
       - name: Augment manifest
