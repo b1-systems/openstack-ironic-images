@@ -19,25 +19,6 @@ jobs:
       - run: sudo apt-get -y update
       - name: setup-mkosi
         uses: systemd/mkosi@v20.2
-      - name: Install host dependencies with APT
-        uses: tecolicom/actions-use-any-tools@v1
-        with:
-          apt: >2
-            acl
-            coreutils
-            debootstrap
-            dosfstools
-            e2fsprogs
-            file
-            gdisk
-            liburing2
-            lvm2
-            mount
-            qemu-utils
-            rsync
-            systemd-container
-            util-linux
-            zstd
       - name: Get code
         uses: actions/checkout@v3
       - name: Set image variables
