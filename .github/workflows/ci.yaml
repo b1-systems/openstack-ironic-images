@@ -86,7 +86,7 @@ jobs:
         id: do_releases_match
         run: ${{ steps.cp10.outputs.python-path }} compare_manifests.py "mkosi.output/$IMAGE_OUTPUT_DIR/${IMAGE_ID}_${{ steps.last_release.outputs.version }}.manifest.old" "mkosi.output/$IMAGE_OUTPUT_DIR/$IMAGE_NAME.manifest"
       - name: Check available Disk Space
-        run: sudo du -hs /*
+        run: sudo du -hs /home/*/* /opt/* /var/*
       - name: Split large files in ≤ 2 GiB chunks or they can't be uploaded to GitHub as a release
         if: steps.do_releases_match.outputs.value == 'false'
         run: |2
