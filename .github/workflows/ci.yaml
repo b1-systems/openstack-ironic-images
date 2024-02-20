@@ -16,11 +16,16 @@ jobs:
     permissions:
       contents: write
     steps:
-      - run: sudo apt-get -y update
-      - name: setup-mkosi
-        uses: systemd/mkosi@v20.2
       - name: Get code
         uses: actions/checkout@v3
+      - name: Setup mkosi
+        uses: systemd/mkosi@v20.2
+      - name: Install Packages with Pip
+        uses: BSFishy/pip-action@v1
+        with:
+          requirements: requirements.txt
+          no-deps: false
+          upgrade: true
       - name: Set image variables
         run: |2
           printf -v IMAGE_ID '%s-%s-%s' "$DISTRIBUTION" "$RELEASE" "$RUNNER_ARCH"
@@ -35,17 +40,16 @@ jobs:
             fi
           done >> "$GITHUB_OUTPUT"
         id: variables
-      - name: Install Packages with Pip
-        uses: BSFishy/pip-action@v1
-        with:
-          requirements: requirements.txt
-          no-deps: false
-          upgrade: true
       - name: Cache/Restore mkosi.cache
         uses: actions/cache@v3
         with:
           path: mkosi.cache
-          key: ${{ steps.variables.outputs.IMAGE_ID }}
+          key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.cache
+      - name: Cache/Restore mkosi.output/debian-tools
+        uses: actions/cache@v3
+        with:
+          path: mkosi.output/debian-tools
+          key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.output/debian-tools
       - name: Show build summary
         run: >2
           sudo mkosi
