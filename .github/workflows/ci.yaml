@@ -27,7 +27,9 @@ jobs:
           no-deps: false
           upgrade: true
       - name: Load loop kernel module
-        run: sudo modprobe loop
+        run: |2
+          sudo modprobe loop
+          ls -la /dev/loop*
       - name: Set image variables
         run: |2
           printf -v IMAGE_ID '%s-%s-%s' "$DISTRIBUTION" "$RELEASE" "$RUNNER_ARCH"
