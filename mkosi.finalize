@@ -78,7 +78,7 @@ sgdisk -n '1:0:+200M' -c '1:OSISM_HV_EFI_PARTITION' -t '1:c12a7328-f81f-11d2-ba4
     -N '3' -c '3:OSISM_HV_LVM_PARTITION' -t '3:8e00' \
     "$RAW_FILE"
 
-stat "$RAW_FILE"
+ls -la /dev/loop*
 
 LOOP_DEVICE="$(losetup -f --show -P "$RAW_FILE")"
 
