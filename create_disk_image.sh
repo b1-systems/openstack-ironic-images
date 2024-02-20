@@ -57,12 +57,14 @@ function cleanup() {
     fi
 }
 
-declare -x -r RAW_FILE="${BUILDROOT}/${IMAGE_ID}_${IMAGE_VERSION}.raw"
+declare -r OUTPUTDIR="$PWD/mkosi.output"
+declare -r BUILDROOT="$OUTPUTDIR/${IMAGE_ID}_${IMAGE_VERSION}"
+declare -r RAW_FILE="${BUILDROOT}.raw"
 declare -r RAW_ZST_FILE="${RAW_FILE}.zst"
 declare -r QCOW2_FILE="${RAW_FILE/.raw/.qcow2}"
 declare -r VG_NAME='system'
 declare -r LVM_DEFINITION_FILE="lvm-${VG_NAME}.csv"
-declare -r ROOT_MNT_DIR="${BUILDROOT}.raw"
+declare -r ROOT_MNT_DIR="${BUILDROOT}.mount"
 declare -x -r MKE2FS_CONFIG="${BUILDROOT}/etc/mke2fs.conf"
 declare -r LUKSKEYFILE="${BUILDROOT}/boot/efi/loader/random-seed"
 declare -r LUKSLABEL="LUKS_LVM"
@@ -78,9 +80,7 @@ sgdisk -n '1:0:+200M' -c '1:OSISM_HV_EFI_PARTITION' -t '1:c12a7328-f81f-11d2-ba4
     -N '3' -c '3:OSISM_HV_LVM_PARTITION' -t '3:8e00' \
     "$RAW_FILE"
 
-ls -la /dev/loop*
-
-LOOP_DEVICE="$(losetup -f --show -P "$RAW_FILE")"
+LOOP_DEVICE="$(losetup -P -f --show "$RAW_FILE")"
 
 partlabel='/dev/disk/by-partlabel/OSISM_HV_EFI_PARTITION'
 wait_for_existence "$partlabel"
