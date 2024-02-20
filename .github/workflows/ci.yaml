@@ -52,12 +52,12 @@ jobs:
           done >> "$GITHUB_OUTPUT"
         id: variables
       - name: Cache/Restore mkosi.cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: mkosi.cache
           key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.cache
       - name: Cache/Restore mkosi.output/debian-tools
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: mkosi.output/debian-tools
           key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.output/debian-tools
