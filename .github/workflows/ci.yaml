@@ -79,7 +79,8 @@ jobs:
           --force
           build
       - name: Convert Image
-        run: sudo ./create_disk_image.sh
+        run: create_disk_image.sh
+        shell: sudo -E bash -e {0}
         env:
           IMAGE_ID: "${{ steps.variables.outputs.IMAGE_ID }}"
           IMAGE_VERSION: "${{ steps.variables.outputs.IMAGE_VERSION }}"
