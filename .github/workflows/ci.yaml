@@ -47,6 +47,7 @@ jobs:
               printf '%s=%s\n' "$_var" "${!_var}"
             fi
           done >> "$GITHUB_OUTPUT"
+          printf 'PYTHONPATH=%s\n' "$(python -m site --user-site)" >> "$GITHUB_OUTPUT"
         id: variables
       - name: Cache/Restore mkosi.cache
         uses: actions/cache@v4
@@ -60,21 +61,27 @@ jobs:
           key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.output/debian-tools
       - name: Show build summary
         run: >2
-          sudo python -m mkosi
+          python -m mkosi
           --mirror http://azure.archive.ubuntu.com/ubuntu
           --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
           --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
           --source-date-epoch "${{ steps.variables.outputs.IMAGE_SOURCE_DATE_EPOCH }}"
           summary
+        shell: sudo -E bash -e {0}
+        env:
+          PYTHONPATH: "${{ steps.variables.outputs.PYTHONPATH }}"
       - name: Build image
         run: >2
-          sudo python -m mkosi
+          python -m mkosi
           --mirror http://azure.archive.ubuntu.com/ubuntu
           --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
           --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
           --source-date-epoch "${{ steps.variables.outputs.IMAGE_SOURCE_DATE_EPOCH }}"
           --force
           build
+        shell: sudo -E bash -e {0}
+        env:
+          PYTHONPATH: "${{ steps.variables.outputs.PYTHONPATH }}"
       - name: Remove /opt to reclaim Disk Space
         run: sudo rm -rf /opt
       - name: Convert Image
