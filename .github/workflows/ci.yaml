@@ -41,7 +41,6 @@ jobs:
         run: |2
           printf -v IMAGE_ID '%s-%s-%s' "$DISTRIBUTION" "$RELEASE" "$RUNNER_ARCH"
           printf -v IMAGE_VERSION '%(%Y-%m-%d)T' "-1"
-          printf -v IMAGE_OUTPUT_DIR '%s~%s' "$DISTRIBUTION" "$RELEASE"
           printf -v IMAGE_NAME '%s_%s' "$IMAGE_ID" "$IMAGE_VERSION"
           printf -v IMAGE_SOURCE_DATE_EPOCH '%d' "$(git log -n 1 --pretty=format:%cd --date=format:"%s")"
           mapfile -t _VARIABLES < <(compgen -A variable)
@@ -86,64 +85,64 @@ jobs:
         env:
           IMAGE_ID: "${{ steps.variables.outputs.IMAGE_ID }}"
           IMAGE_VERSION: "${{ steps.variables.outputs.IMAGE_VERSION }}"
-      - name: Remove mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}/${{steps.variables.outputs.IMAGE_NAME}} to reclaim Disk Space
+      - name: Remove mkosi.output/${{steps.variables.outputs.IMAGE_NAME}} to reclaim Disk Space
         run: rm -rf ${{steps.variables.outputs.IMAGE_NAME}}
         shell: sudo -E bash -e {0}
-        working-directory: mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}
+        working-directory: mkosi.output
       - name: Augment manifest
         run: >2
           python
           augment_manifest.py
-          "mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}/${{steps.variables.outputs.IMAGE_NAME}}.manifest"
+          "mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.manifest"
       - run: >2
           mv
           "${{steps.variables.outputs.IMAGE_NAME}}.manifest"
           "${{steps.variables.outputs.IMAGE_NAME}}.manifest.new"
-        working-directory: mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}
+        working-directory: mkosi.output
       - name: Get latest release manifest
         uses: dsaltares/fetch-gh-release-asset@1.1.1
         with:
           file: "${{ steps.variables.outputs.IMAGE_ID }}_.*\\.manifest"
           regex: true
-          target: "./mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}/"
+          target: mkosi.output
         id: last_release
       - run: >2
           mv
           "${{ steps.variables.outputs.IMAGE_ID }}_${{ steps.last_release.outputs.version }}.manifest"
           "${{ steps.variables.outputs.IMAGE_ID }}_${{ steps.last_release.outputs.version}}.manifest.old"
-        working-directory: mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}
+        working-directory: mkosi.output
       - run: >2
           mv
           "${{steps.variables.outputs.IMAGE_NAME}}.manifest.new"
           "${{steps.variables.outputs.IMAGE_NAME}}.manifest"
-        working-directory: mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}
+        working-directory: mkosi.output
       - name: Compare releases
         id: do_releases_match
         run: >2
           python
           compare_manifests.py
-          "mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}/${{ steps.variables.outputs.IMAGE_ID }}_${{ steps.last_release.outputs.version }}.manifest.old"
-          "mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}/${{steps.variables.outputs.IMAGE_NAME}}.manifest"
+          "mkosi.output/${{ steps.variables.outputs.IMAGE_ID }}_${{ steps.last_release.outputs.version }}.manifest.old"
+          "mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.manifest"
       - name: Split large files in ≤ 2 GiB chunks or they can't be uploaded to GitHub as a release
         if: steps.do_releases_match.outputs.value == 'false'
         run: |2
           for ending in raw.zst qcow2; do
             split --numeric-suffixes=1 --bytes="$((1024 * 1024 * 1024 * 1 ))" "${{steps.variables.outputs.IMAGE_NAME}}.${ending}" "${{steps.variables.outputs.IMAGE_NAME}}.${ending}.";
           done
-        working-directory: mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}
+        working-directory: mkosi.output
       - name: Compute checksums
         if: steps.do_releases_match.outputs.value == 'false'
         run: sha512sum "${{steps.variables.outputs.IMAGE_NAME}}.manifest" "${{steps.variables.outputs.IMAGE_NAME}}.qcow2"* "${{steps.variables.outputs.IMAGE_NAME}}.raw.zst"* > "${{steps.variables.outputs.IMAGE_NAME}}.sha512"
-        working-directory: mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}
+        working-directory: mkosi.output
       - name: Release ${{steps.variables.outputs.IMAGE_VERSION}}
         if: steps.do_releases_match.outputs.value == 'false'
         uses: softprops/action-gh-release@v0.1.15
         with:
           files: |2
-            mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}/${{steps.variables.outputs.IMAGE_NAME}}.sha512
-            mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}/${{steps.variables.outputs.IMAGE_NAME}}.manifest
-            mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}/${{steps.variables.outputs.IMAGE_NAME}}.qcow2.*
-            mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}/${{steps.variables.outputs.IMAGE_NAME}}.raw.zst.*
+            mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.sha512
+            mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.manifest
+            mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.qcow2.*
+            mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.raw.zst.*
           tag_name: ${{steps.variables.outputs.IMAGE_VERSION}}
       - name: Make mkosi.cache cachable for GitHub
         run: sudo setfacl -R -m "u:$UID:rwx" mkosi.cache
