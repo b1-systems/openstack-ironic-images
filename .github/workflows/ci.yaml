@@ -106,6 +106,7 @@ jobs:
           regex: true
           target: mkosi.output
         id: last_release
+      - run: ls -la mkosi.output/*
       - run: >2
           mv
           "${{ steps.variables.outputs.IMAGE_ID }}_${{ steps.last_release.outputs.version }}.manifest"
