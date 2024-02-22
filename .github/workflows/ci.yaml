@@ -18,8 +18,6 @@ jobs:
     steps:
       - name: Get code
         uses: actions/checkout@v4
-      - name: Setup mkosi
-        uses: systemd/mkosi@main
       - name: Install Packages with apt
         run: >2
           sudo apt install -y
@@ -62,7 +60,7 @@ jobs:
           key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.output/debian-tools
       - name: Show build summary
         run: >2
-          sudo mkosi
+          sudo $HOME/.local/bin/mkosi
           --mirror http://azure.archive.ubuntu.com/ubuntu
           --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
           --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
@@ -70,7 +68,7 @@ jobs:
           summary
       - name: Build image
         run: >2
-          sudo mkosi
+          sudo $HOME/.local/bin/mkosi
           --mirror http://azure.archive.ubuntu.com/ubuntu
           --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
           --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
