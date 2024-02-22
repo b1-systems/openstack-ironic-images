@@ -78,12 +78,18 @@ jobs:
           --source-date-epoch "${{ steps.variables.outputs.IMAGE_SOURCE_DATE_EPOCH }}"
           --force
           build
+      - name: Remove /opt to reclaim Disk Space
+        run: sudo rm -rf /opt
       - name: Convert Image
         run: ./create_disk_image.sh
         shell: sudo -E bash -e {0}
         env:
           IMAGE_ID: "${{ steps.variables.outputs.IMAGE_ID }}"
           IMAGE_VERSION: "${{ steps.variables.outputs.IMAGE_VERSION }}"
+      - name: Remove mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}/${{steps.variables.outputs.IMAGE_NAME}} to reclaim Disk Space
+        run: rm -rf ${{steps.variables.outputs.IMAGE_NAME}}
+        shell: sudo -E bash -e {0}
+        working-directory: mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}
       - name: Augment manifest
         run: >2
           python
@@ -118,8 +124,6 @@ jobs:
           compare_manifests.py
           "mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}/${{ steps.variables.outputs.IMAGE_ID }}_${{ steps.last_release.outputs.version }}.manifest.old"
           "mkosi.output/${{ steps.variables.outputs.IMAGE_OUTPUT_DIR }}/${{steps.variables.outputs.IMAGE_NAME}}.manifest"
-      - name: Remove /opt to reclaim Disk Space
-        run: sudo rm -rf /opt
       - name: Split large files in ≤ 2 GiB chunks or they can't be uploaded to GitHub as a release
         if: steps.do_releases_match.outputs.value == 'false'
         run: |2
