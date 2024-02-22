@@ -19,7 +19,7 @@ jobs:
       - name: Get code
         uses: actions/checkout@v4
       - name: Setup mkosi
-        uses: systemd/mkosi@v20.2
+        uses: systemd/mkosi@main
       - name: Install Packages with apt
         run: >2
           sudo apt install -y
