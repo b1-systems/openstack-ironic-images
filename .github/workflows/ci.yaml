@@ -21,6 +21,7 @@ jobs:
       - name: Install Packages with apt
         run: >2
           sudo apt install -y
+          bubblewrap
           cryptsetup-bin
           dosfstools
           e2fsprogs
