@@ -29,12 +29,14 @@ jobs:
           qemu-utils
           rsync
           zstd
-      - name: Install Packages with Pip
-        uses: BSFishy/pip-action@v1
+      - name: Setup Python environment
+        uses: actions/setup-python@v5
         with:
-          requirements: requirements.txt
-          no-deps: false
-          upgrade: true
+          python-version: '3'
+          cache: 'pip'
+        id: py3
+      - name: Install Packages with Pip
+        run: pip install -r requirements.txt
       - name: Set image variables
         run: |2
           printf -v IMAGE_ID '%s-%s-%s' "$DISTRIBUTION" "$RELEASE" "$RUNNER_ARCH"
@@ -47,7 +49,7 @@ jobs:
               printf '%s=%s\n' "$_var" "${!_var}"
             fi
           done >> "$GITHUB_OUTPUT"
-          printf 'PYTHONPATH=%s\n' "$(python -m site --user-site)" >> "$GITHUB_OUTPUT"
+          printf 'PYTHONPATH=%s\n' "$(${{steps.py3.outputs.python-path}} -m site --user-site)" >> "$GITHUB_OUTPUT"
         id: variables
       - name: Cache/Restore mkosi.cache
         uses: actions/cache@v4
@@ -61,7 +63,7 @@ jobs:
           key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.output/debian-tools
       - name: Show build summary
         run: >2
-          python -m mkosi
+          ${{steps.py3.outputs.python-path}} -m mkosi
           --mirror http://azure.archive.ubuntu.com/ubuntu
           --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
           --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
@@ -72,7 +74,7 @@ jobs:
           PYTHONPATH: "${{ steps.variables.outputs.PYTHONPATH }}"
       - name: Build image
         run: >2
-          python -m mkosi
+          ${{steps.py3.outputs.python-path}} -m mkosi
           --mirror http://azure.archive.ubuntu.com/ubuntu
           --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
           --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
@@ -96,7 +98,7 @@ jobs:
         working-directory: mkosi.output
       - name: Augment manifest
         run: >2
-          python
+          ${{steps.py3.outputs.python-path}}
           augment_manifest.py
           "mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.manifest"
       - run: >2
@@ -125,7 +127,7 @@ jobs:
       - name: Compare releases
         id: do_releases_match
         run: >2
-          python
+          ${{steps.py3.outputs.python-path}}
           compare_manifests.py
           "mkosi.output/${{ steps.variables.outputs.IMAGE_ID }}_${{ steps.last_release.outputs.version }}.manifest.old"
           "mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.manifest"
