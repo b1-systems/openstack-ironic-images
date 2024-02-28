@@ -57,11 +57,11 @@ jobs:
         with:
           path: mkosi.cache
           key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.cache
-      - name: Cache/Restore mkosi.output/debian-tools
+      - name: Cache/Restore mkosi.output/ubuntu-tools
         uses: actions/cache@v4
         with:
-          path: mkosi.output/debian-tools
-          key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.output/debian-tools
+          path: mkosi.output/ubuntu-tools
+          key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.output/ubuntu-tools
       - name: Show build summary
         run: >2
           ${{steps.py3.outputs.python-path}} -m mkosi
@@ -86,7 +86,7 @@ jobs:
         env:
           PYTHONPATH: "${{ steps.variables.outputs.PYTHONPATH }}"
       - name: Remove /opt (but not Python) to reclaim Disk Space
-        run: find /opt -not -wholename '/opt/hostedtoolcache/Python*' -delete || true
+        run: find /opt -not -wholename '/opt/hostedtoolcache/Python*' -or -not -wholename '/opt/hostedtoolcache/node*' -delete || true
         shell: sudo -E bash -e {0}
       - name: Convert Image
         run: ./create_disk_image.sh
