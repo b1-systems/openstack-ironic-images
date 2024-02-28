@@ -121,8 +121,8 @@ jobs:
       - run: ls -la mkosi.output/*
       - run: >2
           mv
-          "${{ steps.variables.outputs.IMAGE_ID }}_${{ steps.last_release.outputs.version }}.manifest"
-          "${{ steps.variables.outputs.IMAGE_ID }}_${{ steps.last_release.outputs.version}}.manifest.old"
+          "${{ steps.variables.outputs.IMAGE_ID }}_${{ steps.last_release.outputs.release_name }}.manifest"
+          "${{ steps.variables.outputs.IMAGE_ID }}_${{ steps.last_release.outputs.release_name }}.manifest.old"
         working-directory: mkosi.output
       - run: >2
           mv
@@ -134,7 +134,7 @@ jobs:
         run: >2
           ${{steps.py3.outputs.python-path}}
           compare_manifests.py
-          "mkosi.output/${{ steps.variables.outputs.IMAGE_ID }}_${{ steps.last_release.outputs.version }}.manifest.old"
+          "mkosi.output/${{ steps.variables.outputs.IMAGE_ID }}_${{ steps.last_release.outputs.release_name }}.manifest.old"
           "mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.manifest"
       - name: Split large files in ≤ 2 GiB chunks or they can't be uploaded to GitHub as a release
         if: steps.do_releases_match.outputs.value == 'false'
