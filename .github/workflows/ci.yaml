@@ -86,7 +86,7 @@ jobs:
         env:
           PYTHONPATH: "${{ steps.variables.outputs.PYTHONPATH }}"
       - name: Remove /opt (but not Python) to reclaim Disk Space
-        run: find /opt -not -wholename '/opt/hostedtoolcache/Python*' -delete
+        run: find /opt -not -wholename '/opt/hostedtoolcache/Python*' -delete || true
         shell: sudo -E bash -e {0}
       - name: Convert Image
         run: ./create_disk_image.sh
