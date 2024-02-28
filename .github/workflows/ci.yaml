@@ -88,9 +88,9 @@ jobs:
         shell: sudo -E bash -e {0}
         env:
           PYTHONPATH: "${{ steps.variables.outputs.PYTHONPATH }}"
-      - name: Remove /opt (but not Python) to reclaim Disk Space
-        run: find /opt -not -wholename '/opt/hostedtoolcache/Python*' -or -not -wholename '/opt/hostedtoolcache/node*' -delete || true
-        shell: sudo -E bash -e {0}
+      # - name: Remove /opt (but not Python) to reclaim Disk Space
+      #   run: find /opt -not -wholename '/opt/hostedtoolcache/Python*' -or -not -wholename '/opt/hostedtoolcache/node*' -delete || true
+      #   shell: sudo -E bash -e {0}
       - name: Convert Image
         run: ./create_disk_image.sh
         shell: sudo -E bash -e {0}
@@ -158,5 +158,6 @@ jobs:
             mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.raw.zst.*
           tag_name: ${{steps.variables.outputs.IMAGE_VERSION}}
       - name: Make mkosi.cache cachable for GitHub
-        run: sudo setfacl -R -m "u:$UID:rwx" mkosi.cache
+        run: setfacl -R -m "u:$UID:rwx" mkosi.cache
+        shell: sudo -E bash -e {0}
         if: always()
