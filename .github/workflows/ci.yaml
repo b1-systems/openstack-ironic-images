@@ -158,6 +158,6 @@ jobs:
             mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.raw.zst.*
           tag_name: ${{steps.variables.outputs.IMAGE_VERSION}}
       - name: Make mkosi.cache cachable for GitHub
-        run: setfacl -R -m "u:$UID:rwx" mkosi.cache
+        run: setfacl -R -m "u:$UID:rwx" mkosi.cache mkosi.output
         shell: sudo -E bash -e {0}
         if: always()
