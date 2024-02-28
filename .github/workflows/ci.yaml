@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Install Packages with apt
         run: >2
-          sudo apt install -y
+          apt install -y
           bubblewrap
           cryptsetup-bin
           dosfstools
@@ -30,6 +30,7 @@ jobs:
           qemu-utils
           rsync
           zstd
+        shell: sudo -E bash -e {0}
       - name: Setup Python environment
         uses: actions/setup-python@v5
         with:
@@ -60,15 +61,14 @@ jobs:
         with:
           path: mkosi.cache
           key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.cache
-      - name: Cache/Restore mkosi.output/ubuntu-tools
+      - name: Cache/Restore mkosi.output/${{ env.DISTRIBUTION }}-tools
         uses: actions/cache@v4
         with:
-          path: mkosi.output/ubuntu-tools
-          key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.output/ubuntu-tools
+          path: mkosi.output/${{ env.DISTRIBUTION }}-tools
+          key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.output/${{ env.DISTRIBUTION }}-tools
       - name: Show build summary
         run: >2
           ${{steps.py3.outputs.python-path}} -m mkosi
-          --mirror http://azure.archive.ubuntu.com/ubuntu
           --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
           --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
           --source-date-epoch "${{ steps.variables.outputs.IMAGE_SOURCE_DATE_EPOCH }}"
@@ -79,7 +79,6 @@ jobs:
       - name: Build image
         run: >2
           ${{steps.py3.outputs.python-path}} -m mkosi
-          --mirror http://azure.archive.ubuntu.com/ubuntu
           --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
           --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
           --source-date-epoch "${{ steps.variables.outputs.IMAGE_SOURCE_DATE_EPOCH }}"
@@ -158,6 +157,6 @@ jobs:
             mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.raw.zst.*
           tag_name: ${{steps.variables.outputs.IMAGE_VERSION}}
       - name: Make mkosi.cache cachable for GitHub
-        run: setfacl -R -m "u:$UID:rwx" mkosi.cache mkosi.output
+        run: setfacl -R -m "u:runner:rwx" mkosi.cache mkosi.output
         shell: sudo -E bash -e {0}
         if: always()
