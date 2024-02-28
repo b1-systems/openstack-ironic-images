@@ -88,9 +88,6 @@ jobs:
         shell: sudo -E bash -e {0}
         env:
           PYTHONPATH: "${{ steps.variables.outputs.PYTHONPATH }}"
-      # - name: Remove /opt (but not Python) to reclaim Disk Space
-      #   run: find /opt -not -wholename '/opt/hostedtoolcache/Python*' -or -not -wholename '/opt/hostedtoolcache/node*' -delete || true
-      #   shell: sudo -E bash -e {0}
       - name: Convert Image
         run: ./create_disk_image.sh
         shell: sudo -E bash -e {0}
@@ -112,11 +109,14 @@ jobs:
           "${{steps.variables.outputs.IMAGE_NAME}}.manifest.new"
         working-directory: mkosi.output
       - name: Get latest release manifest
-        uses: dsaltares/fetch-gh-release-asset@1.1.1
+        uses: robinraju/release-downloader@v1.9
         with:
-          file: "${{ steps.variables.outputs.IMAGE_ID }}_.*\\.manifest"
-          regex: true
-          target: mkosi.output
+          latest: true
+          preRelease: false
+          fileName: "*.manifest"
+          tarBall: false
+          zipBall: false
+          out-file-path: mkosi.output
         id: last_release
       - run: ls -la mkosi.output/*
       - run: >2
