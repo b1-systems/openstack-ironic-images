@@ -66,7 +66,7 @@ declare -r VG_NAME='system'
 declare -r LVM_DEFINITION_FILE="lvm-${VG_NAME}.csv"
 declare -r ROOT_MNT_DIR="${BUILDROOT}.mount"
 declare -x -r MKE2FS_CONFIG="${BUILDROOT}/etc/mke2fs.conf"
-declare -r LUKSKEYFILE="${BUILDROOT}/boot/efi/loader/random-seed"
+declare -r LUKSKEYFILE="${BUILDROOT}/boot/efi/loader/random-seed.build"
 declare -r LUKSLABEL="LUKS_LVM"
 
 rm -rf "$QCOW2_FILE" "$RAW_FILE" "$ROOT_MNT_DIR"
