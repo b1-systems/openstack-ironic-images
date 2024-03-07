@@ -36,7 +36,7 @@ def main():
         encoding="utf-8"
     ).split()
 
-    os.environ["PASSWORD"] = RANDOM_SEED.read_text(encoding="utf-8")
+    os.environ["PASSWORD"] = RANDOM_SEED.read_text(encoding="utf-8").strip()
     journal.send(f"Random seed was {os.environ['PASSWORD']}")
 
     try:
