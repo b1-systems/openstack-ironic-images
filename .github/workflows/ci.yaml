@@ -43,8 +43,14 @@ jobs:
           cache: 'pip'
         id: py3
       - name: Clean /usr/local/ to create more space
-        run: rm -rf /usr/local
-        shell: sudo -E bash -e {0}
+        run: |2
+          from pathlib import Path
+          for child in Path('/usr/local').rglob('*'):
+            try:
+              child.unlink()
+            except IsADirectoryError:
+              pass
+        shell: sudo -E python {0}
       - name: Install Packages with Pip
         run: pip install -r requirements.txt
       - name: Set image variables
@@ -59,7 +65,7 @@ jobs:
               printf '%s=%s\n' "$_var" "${!_var}"
             fi
           done >> "$GITHUB_OUTPUT"
-          printf 'PYTHONPATH=%s\n' "$(${{steps.py3.outputs.python-path}} -m site --user-site)" >> "$GITHUB_OUTPUT"
+          printf 'PYTHONPATH=%s\n' "$(${{ steps.py3.outputs.python-path }} -m site --user-site)" >> "$GITHUB_OUTPUT"
         id: variables
       - name: Cache/Restore mkosi.cache
         uses: actions/cache@v4
@@ -122,7 +128,6 @@ jobs:
           zipBall: false
           out-file-path: mkosi.output
         id: last_release
-      - run: ls -la mkosi.output/*
       - run: >2
           mv
           "${{ steps.variables.outputs.IMAGE_ID }}_${{ steps.last_release.outputs.release_name }}.manifest"
@@ -160,7 +165,7 @@ jobs:
             mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.manifest
             mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.qcow2.*
             mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.raw.zst.*
-          tag_name: ${{steps.variables.outputs.IMAGE_NAME}}
+          tag_name: latest-${{steps.variables.outputs.IMAGE_ID}}
       - name: Make mkosi.cache and mkosi.output cachable for GitHub
         run: setfacl -R -m "u:runner:rwx" mkosi.cache mkosi.output
         shell: sudo -E bash -e {0}
