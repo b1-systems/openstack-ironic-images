@@ -9,10 +9,15 @@ name: CI
 
 jobs:
   build:
+    strategy:
+      matrix:
+        include:
+          - distribution: ubuntu
+            release: jammy
     runs-on: ubuntu-latest
     env:
-      DISTRIBUTION: ubuntu
-      RELEASE: jammy
+      DISTRIBUTION: ${{ matrix.distribution }}
+      RELEASE: ${{ matrix.release }}
     permissions:
       contents: write
     steps:
@@ -44,7 +49,7 @@ jobs:
         run: pip install -r requirements.txt
       - name: Set image variables
         run: |2
-          printf -v IMAGE_ID '%s-%s-%s' "$DISTRIBUTION" "$RELEASE" "$RUNNER_ARCH"
+          printf -v IMAGE_ID '%s-%s-%s' "${{ matrix.distribution }}" "${{ matrix.release }}" "$RUNNER_ARCH"
           printf -v IMAGE_VERSION '%(%Y-%m-%d)T' "-1"
           printf -v IMAGE_NAME '%s_%s' "$IMAGE_ID" "$IMAGE_VERSION"
           printf -v IMAGE_SOURCE_DATE_EPOCH '%d' "$(git log -n 1 --pretty=format:%cd --date=format:"%s")"
@@ -61,11 +66,11 @@ jobs:
         with:
           path: mkosi.cache
           key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.cache
-      - name: Cache/Restore mkosi.output/${{ env.DISTRIBUTION }}-tools
+      - name: Cache/Restore mkosi.output/${{ matrix.distribution }}-tools
         uses: actions/cache@v4
         with:
-          path: mkosi.output/${{ env.DISTRIBUTION }}-tools
-          key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.output/${{ env.DISTRIBUTION }}-tools
+          path: mkosi.output/${{ matrix.distribution }}-tools
+          key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.output/${{ matrix.distribution }}-tools
       - name: Show build summary
         run: >2
           ${{steps.py3.outputs.python-path}} -m mkosi
@@ -146,17 +151,17 @@ jobs:
         if: steps.do_releases_match.outputs.value == 'false'
         run: sha512sum "${{steps.variables.outputs.IMAGE_NAME}}.manifest" "${{steps.variables.outputs.IMAGE_NAME}}.qcow2"* "${{steps.variables.outputs.IMAGE_NAME}}.raw.zst"* > "${{steps.variables.outputs.IMAGE_NAME}}.sha512"
         working-directory: mkosi.output
-      - name: Release ${{steps.variables.outputs.IMAGE_VERSION}}
+      - name: Release ${{steps.variables.outputs.IMAGE_NAME}}
         if: steps.do_releases_match.outputs.value == 'false'
-        uses: softprops/action-gh-release@v0.1.15
+        uses: softprops/action-gh-release@v1
         with:
           files: |2
             mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.sha512
             mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.manifest
             mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.qcow2.*
             mkosi.output/${{steps.variables.outputs.IMAGE_NAME}}.raw.zst.*
-          tag_name: ${{steps.variables.outputs.IMAGE_VERSION}}
-      - name: Make mkosi.cache cachable for GitHub
+          tag_name: ${{steps.variables.outputs.IMAGE_NAME}}
+      - name: Make mkosi.cache and mkosi.output cachable for GitHub
         run: setfacl -R -m "u:runner:rwx" mkosi.cache mkosi.output
         shell: sudo -E bash -e {0}
         if: always()
