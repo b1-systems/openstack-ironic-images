@@ -80,6 +80,8 @@ jobs:
       - name: Show build summary
         run: >2
           ${{ steps.py3.outputs.python-path }} -m mkosi
+          --distribution "${{ matrix.distribution }}"
+          --release "${{ matrix.release }}"
           --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
           --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
           --source-date-epoch "${{ steps.variables.outputs.IMAGE_SOURCE_DATE_EPOCH }}"
@@ -90,6 +92,8 @@ jobs:
       - name: Build image
         run: >2
           ${{ steps.py3.outputs.python-path }} -m mkosi
+          --distribution "${{ matrix.distribution }}"
+          --release "${{ matrix.release }}"
           --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
           --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
           --source-date-epoch "${{ steps.variables.outputs.IMAGE_SOURCE_DATE_EPOCH }}"
