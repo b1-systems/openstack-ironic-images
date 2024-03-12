@@ -161,7 +161,7 @@ jobs:
         run: sha512sum "${{ steps.variables.outputs.IMAGE_NAME }}.manifest" "${{ steps.variables.outputs.IMAGE_NAME }}.qcow2"* "${{ steps.variables.outputs.IMAGE_NAME }}.raw.zst"* > "${{ steps.variables.outputs.IMAGE_NAME }}.sha512"
         working-directory: mkosi.output
       - name: Clean previous release
-        if: steps.do_releases_match.outputs.value == 'false' || steps.last_release.outcome != 'success'
+        if: steps.last_release.outcome == 'success'
         run: gh release delete latest-${{ steps.variables.outputs.IMAGE_ID }} --cleanup-tag --yes
         env:
           GH_TOKEN: ${{ github.token }}
