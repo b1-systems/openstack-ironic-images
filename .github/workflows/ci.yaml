@@ -163,6 +163,8 @@ jobs:
       - name: Clean previous release
         if: steps.do_releases_match.outputs.value == 'false' || steps.last_release.outcome != 'success'
         run: gh release delete latest-${{ steps.variables.outputs.IMAGE_ID }} --cleanup-tag --yes
+        env:
+          GH_TOKEN: ${{ github.token }}
       - name: Release ${{ steps.variables.outputs.IMAGE_NAME }}
         if: steps.do_releases_match.outputs.value == 'false' || steps.last_release.outcome != 'success'
         uses: softprops/action-gh-release@v1
