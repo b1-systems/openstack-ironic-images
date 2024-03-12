@@ -141,7 +141,6 @@ jobs:
           "${{ steps.variables.outputs.IMAGE_NAME }}.manifest.new"
           "${{ steps.variables.outputs.IMAGE_NAME }}.manifest"
         working-directory: mkosi.output
-        if: steps.last_release.outcome == 'success'
       - name: Compare releases
         id: do_releases_match
         run: >2
