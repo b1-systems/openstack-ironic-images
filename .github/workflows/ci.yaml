@@ -122,22 +122,26 @@ jobs:
         uses: robinraju/release-downloader@v1.9
         with:
           tag: latest-${{ steps.variables.outputs.IMAGE_ID }}
+          latest: false
           preRelease: false
           fileName: "*.manifest"
           tarBall: false
           zipBall: false
           out-file-path: mkosi.output
+        continue-on-error: true
         id: last_release
       - run: >2
           mv
           "${{ steps.last_release.outputs.release_name }}.manifest"
           "${{ steps.last_release.outputs.release_name }}.manifest.old"
         working-directory: mkosi.output
+        if: steps.last_release.outcome == 'success'
       - run: >2
           mv
           "${{ steps.variables.outputs.IMAGE_NAME }}.manifest.new"
           "${{ steps.variables.outputs.IMAGE_NAME }}.manifest"
         working-directory: mkosi.output
+        if: steps.last_release.outcome == 'success'
       - name: Compare releases
         id: do_releases_match
         run: >2
@@ -145,19 +149,23 @@ jobs:
           compare_manifests.py
           "mkosi.output/${{ steps.last_release.outputs.release_name }}.manifest.old"
           "mkosi.output/${{ steps.variables.outputs.IMAGE_NAME }}.manifest"
+        if: steps.last_release.outcome == 'success'
       - name: Split large files in ≤ 2 GiB chunks or they can't be uploaded to GitHub as a release
-        if: steps.do_releases_match.outputs.value == 'false'
+        if: steps.do_releases_match.outputs.value == 'false' || steps.last_release.outcome != 'success'
         run: |2
           for ending in raw.zst qcow2; do
             split --numeric-suffixes=1 --bytes="$((1024 * 1024 * 1024 * 1 ))" "${{ steps.variables.outputs.IMAGE_NAME }}.${ending}" "${{ steps.variables.outputs.IMAGE_NAME }}.${ending}.";
           done
         working-directory: mkosi.output
       - name: Compute checksums
-        if: steps.do_releases_match.outputs.value == 'false'
+        if: steps.do_releases_match.outputs.value == 'false' || steps.last_release.outcome != 'success'
         run: sha512sum "${{ steps.variables.outputs.IMAGE_NAME }}.manifest" "${{ steps.variables.outputs.IMAGE_NAME }}.qcow2"* "${{ steps.variables.outputs.IMAGE_NAME }}.raw.zst"* > "${{ steps.variables.outputs.IMAGE_NAME }}.sha512"
         working-directory: mkosi.output
+      - name: Clean previous release
+        if: steps.do_releases_match.outputs.value == 'false' || steps.last_release.outcome != 'success'
+        run: gh release delete latest-${{ steps.variables.outputs.IMAGE_ID }} --cleanup-tag --yes
       - name: Release ${{ steps.variables.outputs.IMAGE_NAME }}
-        if: steps.do_releases_match.outputs.value == 'false'
+        if: steps.do_releases_match.outputs.value == 'false' || steps.last_release.outcome != 'success'
         uses: softprops/action-gh-release@v1
         with:
           files: |2
