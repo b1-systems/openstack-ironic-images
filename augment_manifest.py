@@ -9,7 +9,7 @@ if __name__ == "__main__":
     manifest_file = Path(sys.argv[1])
     path_list: list[Path] = [
         Path("lvm-system.csv"),
-        Path("mkosi.conf"),
+        *Path("mkosi.conf.d").rglob("*"),
         *Path("mkosi.extra").rglob("*"),
         Path("mkosi.postinst.chroot"),
         Path("mkosi.finalize")
