@@ -7,6 +7,10 @@ name: CI
   workflow_dispatch:
   push:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     strategy:
@@ -14,6 +18,8 @@ jobs:
         include:
           - distribution: ubuntu
             release: jammy
+          - distribution: rocky
+            release: 9
     runs-on: ubuntu-latest
     env:
       DISTRIBUTION: ${{ matrix.distribution }}
