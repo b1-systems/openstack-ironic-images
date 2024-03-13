@@ -30,6 +30,9 @@ jobs:
     steps:
       - name: Get code
         uses: actions/checkout@v4
+      - name: Update Package Cache
+        run: apt update
+        shell: sudo -E bash -e {0}
       - name: Install Packages with apt
         run: >2
           apt install -y
