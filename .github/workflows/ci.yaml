@@ -192,6 +192,7 @@ jobs:
           name: ${{ steps.variables.outputs.IMAGE_NAME }}
           tag_name: latest-${{ steps.variables.outputs.IMAGE_ID }}
           make_latest: true
+          draft: false
       - name: Make mkosi.cache and mkosi.output cachable for GitHub
         run: setfacl -R -m "u:runner:rwx" mkosi.cache mkosi.output
         shell: sudo -E bash -e {0}
