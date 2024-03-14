@@ -1,7 +1,11 @@
 #!/bin/bash
 
 # Linux kernel x86 boot executable bzImage, version 5.15.0-73-generic …
-read -r _ _ _ _ _ _ _ KVER _ < <(file -bL "/boot/vmlinuz")
+if [[ -e "/boot/vmlinuz" ]]; then
+    read -r _ _ _ _ _ _ _ KVER _ < <(file -bL "/boot/vmlinuz")
+else
+    KVER="$(rpm -q kernel --queryformat='%{REQUIREVERSION}')"
+fi
 
 for _dir in BOOT systemd Linux; do
     mkdir -p "/boot/efi/EFI/$_dir"
@@ -17,5 +21,3 @@ printf 'title      Ubuntu 22.04 LTS (OSISM HV)
 version    %s
 efi        /EFI/Linux/linux-%s.efi
 ' "$KVER" "$KVER" > "/boot/efi/loader/entries/${KVER}.conf"
-
- 
