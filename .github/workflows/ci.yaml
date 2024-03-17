@@ -30,9 +30,6 @@ jobs:
     steps:
       - name: Get code
         uses: actions/checkout@v4
-      - name: Create cache dir
-        run: mount --types tmpfs none /var/tmp/mkosi -o X-mount.mkdir
-        shell: sudo -E bash -e {0}
       - name: Update Package Cache
         run: apt update
         shell: sudo -E bash -e {0}
@@ -99,21 +96,19 @@ jobs:
         with:
           file_path: build_summary.json
         id: build_summary
-      - name: Cache/Restore /var/tmp/mkosi
+      - name: Mount a tmpfs at ${{ steps.build_summary.outputs.CacheDirectory }}
+        run: mount --types tmpfs none ${{ steps.build_summary.outputs.CacheDirectory }} -o X-mount.mkdir
+        shell: sudo -E bash -e {0}
+      - name: Cache/Restore ${{ steps.build_summary.outputs.CacheDirectory }}
         uses: actions/cache@v4
         with:
-          path: /var/tmp/mkosi
-          key: ${{ steps.build_summary.outputs.Output }}-/var/tmp/mkosi
-      - name: Cache/Restore mkosi.cache
+          path: ${{ steps.build_summary.outputs.CacheDirectory }}
+          key: ${{ steps.build_summary.outputs.Output }}-${{ steps.build_summary.outputs.CacheDirectory }}
+      - name: Cache/Restore ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
         uses: actions/cache@v4
         with:
-          path: mkosi.cache
-          key: ${{ steps.build_summary.outputs.Output }}-mkosi.cache
-      - name: Cache/Restore mkosi.output/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
-        uses: actions/cache@v4
-        with:
-          path: mkosi.output/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
-          key: ${{ steps.build_summary.outputs.Output }}-mkosi.output/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
+          path: ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
+          key: ${{ steps.build_summary.outputs.Output }}-${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
       - name: Build image
         run: >2
           ${{ steps.py3.outputs.python-path }} -m mkosi
@@ -208,7 +203,7 @@ jobs:
           tag_name: latest-${{ steps.build_summary.outputs.Output }}
           make_latest: true
           draft: false
-      - name: Make mkosi.cache and mkosi.output cachable for GitHub
-        run: setfacl -R -m "u:runner:rwx" mkosi.cache mkosi.output
+      - name: Make ${{ steps.build_summary.outputs.CacheDirectory }} and ${{ steps.build_summary.outputs.OutputDirectory }} cachable for GitHub
+        run: setfacl -R -m "u:runner:rwx" ${{ steps.build_summary.outputs.CacheDirectory }} ${{ steps.build_summary.outputs.OutputDirectory }}
         shell: sudo -E bash -e {0}
         if: always()
