@@ -10,11 +10,11 @@ if __name__ == "__main__":
     old_manifest_file = Path(sys.argv[1])
     new_manifest_file = Path(sys.argv[2])
 
-    old_manifest = json.load(old_manifest_file.open())
-    new_manifest = json.load(new_manifest_file.open())
+    old_manifest = json.load(old_manifest_file.open(encoding='utf-8'))
+    new_manifest = json.load(new_manifest_file.open(encoding='utf-8'))
 
-    del(old_manifest["config"]["version"])
-    del(new_manifest["config"]["version"])
+    del old_manifest["config"]["version"]
+    del new_manifest["config"]["version"]
 
     if deepcompare.compare(old_manifest, new_manifest):
         github_action_utils.set_output(name="value", value="true")
