@@ -96,14 +96,15 @@ jobs:
         with:
           file_path: build_summary.json
         id: build_summary
-      - name: Mount a tmpfs at ${{ steps.build_summary.outputs.CacheDirectory }}
-        run: mount --types tmpfs none ${{ steps.build_summary.outputs.CacheDirectory }} -o X-mount.mkdir
-        shell: sudo -E bash -e {0}
+      - name: Create ${{ steps.build_summary.outputs.CacheDirectory }}
+        run: mkdir -p ${{ steps.build_summary.outputs.CacheDirectory }}
       - name: Cache/Restore ${{ steps.build_summary.outputs.CacheDirectory }}
         uses: actions/cache@v4
         with:
           path: ${{ steps.build_summary.outputs.CacheDirectory }}
           key: ${{ steps.build_summary.outputs.Output }}-${{ steps.build_summary.outputs.CacheDirectory }}
+      - name: Create ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
+        run: mkdir -p ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
       - name: Cache/Restore ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
         uses: actions/cache@v4
         with:
