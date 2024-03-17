@@ -8,7 +8,7 @@ name: CI
   push:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -66,6 +66,7 @@ jobs:
         run: pip install -r requirements.txt
       - name: Set image variables
         run: |2
+          printf -v IMAGE_PROFILE '%s-%s.conf' "${{ matrix.distribution }}" "${{ matrix.release }}"
           printf -v IMAGE_ID '%s-%s-%s' "${{ matrix.distribution }}" "${{ matrix.release }}" "$RUNNER_ARCH"
           printf -v IMAGE_VERSION '%(%Y-%m-%d)T' "-1"
           printf -v IMAGE_NAME '%s_%s' "$IMAGE_ID" "$IMAGE_VERSION"
@@ -78,33 +79,44 @@ jobs:
           done >> "$GITHUB_OUTPUT"
           printf 'PYTHONPATH=%s\n' "$(${{ steps.py3.outputs.python-path }} -m site --user-site)" >> "$GITHUB_OUTPUT"
         id: variables
+      - name: Show build summary
+        run: >2
+          ${{ steps.py3.outputs.python-path }} -m mkosi
+          --profile "${{ steps.variables.outputs.IMAGE_PROFILE }}"
+          --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
+          --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
+          --source-date-epoch "${{ steps.variables.outputs.IMAGE_SOURCE_DATE_EPOCH }}"
+          --json
+          summary
+          | jq '.Images[0]'
+          > build_summary.json
+        shell: sudo -E bash -e {0}
+        env:
+          PYTHONPATH: "${{ steps.variables.outputs.PYTHONPATH }}"
+      - name: Parse build summary
+        uses: zoexx/github-action-json-file-properties@release
+        with:
+          file_path: build_summary.json
+        id: build_summary
+      - name: Cache/Restore mkosi.workspace
+        uses: actions/cache@v4
+        with:
+          path: mkosi.workspace
+          key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.workspace
       - name: Cache/Restore mkosi.cache
         uses: actions/cache@v4
         with:
           path: mkosi.cache
           key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.cache
-      - name: Cache/Restore mkosi.output/${{ matrix.distribution }}-tools
+      - name: Cache/Restore mkosi.output/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
         uses: actions/cache@v4
         with:
-          path: mkosi.output/${{ matrix.distribution }}-tools
-          key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.output/${{ matrix.distribution }}-tools
-      - name: Show build summary
-        run: >2
-          ${{ steps.py3.outputs.python-path }} -m mkosi
-          --distribution "${{ matrix.distribution }}"
-          --release "${{ matrix.release }}"
-          --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
-          --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
-          --source-date-epoch "${{ steps.variables.outputs.IMAGE_SOURCE_DATE_EPOCH }}"
-          summary
-        shell: sudo -E bash -e {0}
-        env:
-          PYTHONPATH: "${{ steps.variables.outputs.PYTHONPATH }}"
+          path: mkosi.output/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
+          key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.output/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
       - name: Build image
         run: >2
           ${{ steps.py3.outputs.python-path }} -m mkosi
-          --distribution "${{ matrix.distribution }}"
-          --release "${{ matrix.release }}"
+          --profile "${{ steps.variables.outputs.IMAGE_PROFILE }}"
           --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
           --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
           --source-date-epoch "${{ steps.variables.outputs.IMAGE_SOURCE_DATE_EPOCH }}"

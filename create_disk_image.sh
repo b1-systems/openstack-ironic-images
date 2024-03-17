@@ -64,7 +64,8 @@ declare -r RAW_ZST_FILE="${RAW_FILE}.zst"
 declare -r QCOW2_FILE="${RAW_FILE/.raw/.qcow2}"
 declare -r VG_NAME='system'
 declare -r LVM_DEFINITION_FILE="lvm-${VG_NAME}.csv"
-declare -r ROOT_MNT_DIR="${BUILDROOT}.mount"
+ROOT_MNT_DIR="$(mktemp -d --suffix ".${IMAGE_ID}_${IMAGE_VERSION}.mount")"
+declare -r ROOT_MNT_DIR
 declare -x -r MKE2FS_CONFIG="${BUILDROOT}/etc/mke2fs.conf"
 declare -r LUKSKEYFILE="${BUILDROOT}/boot/efi/loader/random-seed.build"
 declare -r LUKSLABEL="LUKS_LVM"
@@ -131,7 +132,7 @@ mount -orw "LABEL=esp" "$mount_point"
 
 printf 'Moving files from %s to %s\n' "$BUILDROOT" "$ROOT_MNT_DIR"
 # boot/vmlinuz{,.old} are symlinks, but the target is a vfat partition without support
-rsync -aAXUHS --exclude '/proc/**' --exclude '/sys/**' --exclude '/dev/**' --exclude '/tmp/**' --exclude '/run/**' "${BUILDROOT}/" "$ROOT_MNT_DIR"
+rsync -aAXUHS --exclude '/proc/**' --exclude '/sys/**' --exclude '/dev/**' --exclude '/tmp/**' --exclude '/run/**' "${BUILDROOT}/" "$ROOT_MNT_DIR" || true
 sync
 
 cleanup
