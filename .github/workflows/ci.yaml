@@ -137,11 +137,6 @@ jobs:
           ${{ steps.py3.outputs.python-path }}
           "${GITHUB_WORKSPACE}/augment_manifest.py"
           "${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.Output }}.manifest"
-      - run: >2
-          mv
-          "${{ steps.build_summary.outputs.Output }}.manifest"
-          "${{ steps.build_summary.outputs.Output }}.manifest.new"
-        working-directory: "${{ steps.build_summary.outputs.OutputDirectory }}"
       - name: Get latest release manifest
         uses: robinraju/release-downloader@v1.9
         with:
@@ -151,26 +146,15 @@ jobs:
           fileName: "*.manifest"
           tarBall: false
           zipBall: false
-          out-file-path: "${{ steps.build_summary.outputs.OutputDirectory }}"
+          out-file-path: /tmp
         continue-on-error: true
         id: last_release
-      - run: >2
-          mv
-          "${{ steps.last_release.outputs.release_name }}.manifest"
-          "${{ steps.last_release.outputs.release_name }}.manifest.old"
-        working-directory: "${{ steps.build_summary.outputs.OutputDirectory }}"
-        if: steps.last_release.outcome == 'success'
-      - run: >2
-          mv
-          "${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.Output }}.manifest.new"
-          "${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.Output }}.manifest"
-        working-directory: "${{ steps.build_summary.outputs.OutputDirectory }}"
       - name: Compare releases
         id: do_releases_match
         run: >2
           ${{steps.py3.outputs.python-path}}
           "${GITHUB_WORKSPACE}/compare_manifests.py"
-          "${{ steps.last_release.outputs.release_name }}.manifest.old"
+          /tmp/*.manifest
           "${{ steps.build_summary.outputs.Output }}.manifest"
         working-directory: "${{ steps.build_summary.outputs.OutputDirectory }}"
         if: steps.last_release.outcome == 'success'
