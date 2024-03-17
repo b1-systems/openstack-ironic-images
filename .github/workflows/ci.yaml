@@ -96,20 +96,20 @@ jobs:
         with:
           file_path: build_summary.json
         id: build_summary
-      - name: Create ${{ steps.build_summary.outputs.CacheDirectory }}
-        run: mkdir -p ${{ steps.build_summary.outputs.CacheDirectory }}
       - name: Cache/Restore ${{ steps.build_summary.outputs.CacheDirectory }}
         uses: actions/cache@v4
         with:
           path: ${{ steps.build_summary.outputs.CacheDirectory }}
           key: ${{ steps.build_summary.outputs.Output }}-${{ steps.build_summary.outputs.CacheDirectory }}
-      - name: Create ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
-        run: mkdir -p ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
+      - name: Create ${{ steps.build_summary.outputs.CacheDirectory }}
+        run: mkdir -p ${{ steps.build_summary.outputs.CacheDirectory }}
       - name: Cache/Restore ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
         uses: actions/cache@v4
         with:
           path: ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
           key: ${{ steps.build_summary.outputs.Output }}-${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
+      - name: Create ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
+        run: mkdir -p ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
       - name: Build image
         run: >2
           ${{ steps.py3.outputs.python-path }} -m mkosi
@@ -171,7 +171,7 @@ jobs:
         run: sha512sum "${{ steps.build_summary.outputs.Output }}.manifest" "${{ steps.build_summary.outputs.Output }}.qcow2"* "${{ steps.build_summary.outputs.Output }}.raw.zst"* > "${{ steps.build_summary.outputs.Output }}.sha512"
         working-directory: "${{ steps.build_summary.outputs.OutputDirectory }}"
       - name: Clean previous release
-        if: steps.do_releases_match.outputs.value == 'false' || steps.last_release.outcome != 'success'
+        if: steps.do_releases_match.outputs.value == 'false' && steps.last_release.outcome == 'success'
         run: gh release delete latest-${{ steps.build_summary.outputs.Output }} --cleanup-tag --yes
         env:
           GH_TOKEN: ${{ github.token }}
