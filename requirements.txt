@@ -2,3 +2,6 @@ python-deepcompare
 github-action-utils
 mkosi @ git+https://github.com/systemd/mkosi.git@main#egg=mkosi
 isort
+lsprotocol
+pygls
+packaging
