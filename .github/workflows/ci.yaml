@@ -96,20 +96,20 @@ jobs:
         with:
           file_path: build_summary.json
         id: build_summary
-      - name: Cache/Restore ${{ steps.build_summary.outputs.CacheDirectory }}
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.build_summary.outputs.CacheDirectory }}
-          key: ${{ steps.build_summary.outputs.Output }}-${{ steps.build_summary.outputs.CacheDirectory }}
-      - name: Create ${{ steps.build_summary.outputs.CacheDirectory }}
-        run: mkdir -p ${{ steps.build_summary.outputs.CacheDirectory }}
-      - name: Cache/Restore ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
-          key: ${{ steps.build_summary.outputs.Output }}-${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
-      - name: Create ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
-        run: mkdir -p ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
+      # - name: Cache/Restore ${{ steps.build_summary.outputs.CacheDirectory }}
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ${{ steps.build_summary.outputs.CacheDirectory }}
+      #     key: ${{ steps.build_summary.outputs.Output }}-${{ steps.build_summary.outputs.CacheDirectory }}
+      # - name: Create ${{ steps.build_summary.outputs.CacheDirectory }}
+      #   run: mkdir -p ${{ steps.build_summary.outputs.CacheDirectory }}
+      # - name: Cache/Restore ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
+      #     key: ${{ steps.build_summary.outputs.Output }}-${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
+      # - name: Create ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
+      #   run: mkdir -p ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
       - name: Build image
         run: >2
           ${{ steps.py3.outputs.python-path }} -m mkosi
@@ -188,7 +188,7 @@ jobs:
           tag_name: latest-${{ steps.build_summary.outputs.Output }}
           make_latest: true
           draft: false
-      - name: Make ${{ steps.build_summary.outputs.CacheDirectory }} and ${{ steps.build_summary.outputs.OutputDirectory }} cachable for GitHub
-        run: setfacl -R -m "u:runner:rwx" ${{ steps.build_summary.outputs.CacheDirectory }} ${{ steps.build_summary.outputs.OutputDirectory }}
-        shell: sudo -E bash -e {0}
-        if: always()
+      # - name: Make ${{ steps.build_summary.outputs.CacheDirectory }} and ${{ steps.build_summary.outputs.OutputDirectory }} cachable for GitHub
+      #   run: setfacl -R -m "u:runner:rwx" ${{ steps.build_summary.outputs.CacheDirectory }} ${{ steps.build_summary.outputs.OutputDirectory }}
+      #   shell: sudo -E bash -e {0}
+      #   if: always()
