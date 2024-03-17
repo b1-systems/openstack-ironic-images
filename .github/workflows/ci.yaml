@@ -70,7 +70,7 @@ jobs:
       - name: Set image variables
         run: |2
           printf -v IMAGE_PROFILE '%s-%s.conf' "${{ matrix.distribution }}" "${{ matrix.release }}"
-          printf -v IMAGE_ID '%s-%s-%s' "${{ matrix.distribution }}" "${{ matrix.release }}" "$RUNNER_ARCH"
+          printf -v IMAGE_ID '%s-%s' "${{ matrix.distribution }}" "${{ matrix.release }}"
           printf -v IMAGE_VERSION '%(%Y-%m-%d)T' "-1"
           printf -v IMAGE_NAME '%s_%s' "$IMAGE_ID" "$IMAGE_VERSION"
           printf -v IMAGE_SOURCE_DATE_EPOCH '%d' "$(git log -n 1 --pretty=format:%cd --date=format:"%s")"
@@ -83,16 +83,14 @@ jobs:
           printf 'PYTHONPATH=%s\n' "$(${{ steps.py3.outputs.python-path }} -m site --user-site)" >> "$GITHUB_OUTPUT"
         id: variables
       - name: Show build summary
-        run: >2
-          ${{ steps.py3.outputs.python-path }} -m mkosi
-          --profile "${{ steps.variables.outputs.IMAGE_PROFILE }}"
-          --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
-          --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
-          --source-date-epoch "${{ steps.variables.outputs.IMAGE_SOURCE_DATE_EPOCH }}"
-          --json
-          summary
-          | jq '.Images[0]'
-          > build_summary.json
+        run: |2
+          declare -a _args
+          _args+=("-m" "mkosi")
+          _args+=("--profile" "${{ steps.variables.outputs.IMAGE_PROFILE }}")
+          _args+=("--image-version" "${{ steps.variables.outputs.IMAGE_VERSION }}")
+          _args+=("--source-date-epoch" "${{ steps.variables.outputs.IMAGE_SOURCE_DATE_EPOCH }}")
+          ${{ steps.py3.outputs.python-path }} "${_args[@]}" summary
+          ${{ steps.py3.outputs.python-path }} "${_args[@]}" --json summary | jq '.Images[0]' > build_summary.json
         shell: sudo -E bash -e {0}
         env:
           PYTHONPATH: "${{ steps.variables.outputs.PYTHONPATH }}"
@@ -121,7 +119,6 @@ jobs:
           ${{ steps.py3.outputs.python-path }} -m mkosi
           --profile "${{ steps.variables.outputs.IMAGE_PROFILE }}"
           --image-version "${{ steps.variables.outputs.IMAGE_VERSION }}"
-          --image-id "${{ steps.variables.outputs.IMAGE_ID }}"
           --source-date-epoch "${{ steps.variables.outputs.IMAGE_SOURCE_DATE_EPOCH }}"
           --force
           build
@@ -134,6 +131,8 @@ jobs:
         env:
           IMAGE_ID: "${{ steps.variables.outputs.IMAGE_ID }}"
           IMAGE_VERSION: "${{ steps.variables.outputs.IMAGE_VERSION }}"
+          OUTPUTDIR: "${{ steps.build_summary.outputs.OutputDirectory }}"
+          BUILDROOT: "${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.Output }}"
       - name: Remove mkosi.output/${{ steps.variables.outputs.IMAGE_NAME }} to reclaim Disk Space
         run: rm -rf ${{ steps.variables.outputs.IMAGE_NAME }}
         shell: sudo -E bash -e {0}

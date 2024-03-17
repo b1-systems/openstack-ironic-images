@@ -57,8 +57,6 @@ function cleanup() {
     fi
 }
 
-declare -r OUTPUTDIR="$PWD/mkosi.output"
-declare -r BUILDROOT="$OUTPUTDIR/${IMAGE_ID}_${IMAGE_VERSION}"
 declare -r RAW_FILE="${BUILDROOT}.raw"
 declare -r RAW_ZST_FILE="${RAW_FILE}.zst"
 declare -r QCOW2_FILE="${RAW_FILE/.raw/.qcow2}"
