@@ -170,7 +170,7 @@ jobs:
         run: sha512sum "${{ steps.build_summary.outputs.Output }}.manifest" "${{ steps.build_summary.outputs.Output }}.qcow2"* "${{ steps.build_summary.outputs.Output }}.raw.zst"* > "${{ steps.build_summary.outputs.Output }}.sha512"
         working-directory: "${{ steps.build_summary.outputs.OutputDirectory }}"
       - name: Clean previous release
-        if: steps.last_release.outcome == 'success'
+        if: steps.do_releases_match.outputs.value == 'false' || steps.last_release.outcome != 'success'
         run: gh release delete latest-${{ steps.build_summary.outputs.Output }} --cleanup-tag --yes
         env:
           GH_TOKEN: ${{ github.token }}
