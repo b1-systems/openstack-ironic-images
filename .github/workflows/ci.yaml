@@ -69,8 +69,8 @@ jobs:
         run: pip install -r requirements.txt
       - name: Set image variables
         run: |2
-          printf -v IMAGE_PROFILE '%s-%s.conf' "${{ matrix.distribution }}" "${{ matrix.release }}"
           printf -v IMAGE_ID '%s-%s' "${{ matrix.distribution }}" "${{ matrix.release }}"
+          printf -v IMAGE_PROFILE '%s.conf' "$IMAGE_ID"
           printf -v IMAGE_VERSION '%(%Y-%m-%d)T' "-1"
           printf -v IMAGE_NAME '%s_%s' "$IMAGE_ID" "$IMAGE_VERSION"
           printf -v IMAGE_SOURCE_DATE_EPOCH '%d' "$(git log -n 1 --pretty=format:%cd --date=format:"%s")"
@@ -103,17 +103,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /var/tmp/mkosi
-          key: ${{ steps.variables.outputs.IMAGE_ID }}-/var/tmp/mkosi
+          key: ${{ steps.build_summary.outputs.Output }}-/var/tmp/mkosi
       - name: Cache/Restore mkosi.cache
         uses: actions/cache@v4
         with:
           path: mkosi.cache
-          key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.cache
+          key: ${{ steps.build_summary.outputs.Output }}-mkosi.cache
       - name: Cache/Restore mkosi.output/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
         uses: actions/cache@v4
         with:
           path: mkosi.output/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
-          key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.output/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
+          key: ${{ steps.build_summary.outputs.Output }}-mkosi.output/${{ steps.build_summary.outputs.ToolsTreeDistribution }}-tools
       - name: Build image
         run: >2
           ${{ steps.py3.outputs.python-path }} -m mkosi
@@ -129,82 +129,83 @@ jobs:
         run: ./create_disk_image.sh
         shell: sudo -E bash -e {0}
         env:
-          IMAGE_ID: "${{ steps.variables.outputs.IMAGE_ID }}"
+          IMAGE_ID: "${{ steps.build_summary.outputs.Output }}"
           IMAGE_VERSION: "${{ steps.variables.outputs.IMAGE_VERSION }}"
           OUTPUTDIR: "${{ steps.build_summary.outputs.OutputDirectory }}"
           BUILDROOT: "${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.Output }}"
-      - name: Remove mkosi.output/${{ steps.variables.outputs.IMAGE_NAME }} to reclaim Disk Space
-        run: rm -rf ${{ steps.variables.outputs.IMAGE_NAME }}
+      - name: "Remove ${{ steps.build_summary.outputs.Output }} to reclaim Disk Space"
+        run: rm -rf "${{ steps.build_summary.outputs.Output }}"
         shell: sudo -E bash -e {0}
-        working-directory: mkosi.output
+        working-directory: "${{ steps.build_summary.outputs.OutputDirectory }}"
       - name: Augment manifest
         run: >2
           ${{ steps.py3.outputs.python-path }}
-          augment_manifest.py
-          "mkosi.output/${{ steps.variables.outputs.IMAGE_NAME }}.manifest"
+          "${GITHUB_WORKSPACE}/augment_manifest.py"
+          "${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.Output }}.manifest"
       - run: >2
           mv
-          "${{ steps.variables.outputs.IMAGE_NAME }}.manifest"
-          "${{ steps.variables.outputs.IMAGE_NAME }}.manifest.new"
-        working-directory: mkosi.output
+          "${{ steps.build_summary.outputs.Output }}.manifest"
+          "${{ steps.build_summary.outputs.Output }}.manifest.new"
+        working-directory: "${{ steps.build_summary.outputs.OutputDirectory }}"
       - name: Get latest release manifest
         uses: robinraju/release-downloader@v1.9
         with:
-          tag: latest-${{ steps.variables.outputs.IMAGE_ID }}
+          tag: latest-${{ steps.build_summary.outputs.Output }}
           latest: false
           preRelease: false
           fileName: "*.manifest"
           tarBall: false
           zipBall: false
-          out-file-path: mkosi.output
+          out-file-path: "${{ steps.build_summary.outputs.OutputDirectory }}"
         continue-on-error: true
         id: last_release
       - run: >2
           mv
           "${{ steps.last_release.outputs.release_name }}.manifest"
           "${{ steps.last_release.outputs.release_name }}.manifest.old"
-        working-directory: mkosi.output
+        working-directory: "${{ steps.build_summary.outputs.OutputDirectory }}"
         if: steps.last_release.outcome == 'success'
       - run: >2
           mv
-          "${{ steps.variables.outputs.IMAGE_NAME }}.manifest.new"
-          "${{ steps.variables.outputs.IMAGE_NAME }}.manifest"
-        working-directory: mkosi.output
+          "${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.Output }}.manifest.new"
+          "${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.Output }}.manifest"
+        working-directory: "${{ steps.build_summary.outputs.OutputDirectory }}"
       - name: Compare releases
         id: do_releases_match
         run: >2
           ${{steps.py3.outputs.python-path}}
-          compare_manifests.py
-          "mkosi.output/${{ steps.last_release.outputs.release_name }}.manifest.old"
-          "mkosi.output/${{ steps.variables.outputs.IMAGE_NAME }}.manifest"
+          "${GITHUB_WORKSPACE}/compare_manifests.py"
+          "${{ steps.last_release.outputs.release_name }}.manifest.old"
+          "${{ steps.build_summary.outputs.Output }}.manifest"
+        working-directory: "${{ steps.build_summary.outputs.OutputDirectory }}"
         if: steps.last_release.outcome == 'success'
       - name: Split large files in ≤ 2 GiB chunks or they can't be uploaded to GitHub as a release
         if: steps.do_releases_match.outputs.value == 'false' || steps.last_release.outcome != 'success'
         run: |2
           for ending in raw.zst qcow2; do
-            split --numeric-suffixes=1 --bytes="$((1024 * 1024 * 1024 * 1 ))" "${{ steps.variables.outputs.IMAGE_NAME }}.${ending}" "${{ steps.variables.outputs.IMAGE_NAME }}.${ending}.";
+            split --numeric-suffixes=1 --bytes="$((1024 * 1024 * 1024 * 1 ))" "${{ steps.build_summary.outputs.Output }}.${ending}" "${{ steps.build_summary.outputs.Output }}.${ending}.";
           done
-        working-directory: mkosi.output
+        working-directory: "${{ steps.build_summary.outputs.OutputDirectory }}"
       - name: Compute checksums
         if: steps.do_releases_match.outputs.value == 'false' || steps.last_release.outcome != 'success'
-        run: sha512sum "${{ steps.variables.outputs.IMAGE_NAME }}.manifest" "${{ steps.variables.outputs.IMAGE_NAME }}.qcow2"* "${{ steps.variables.outputs.IMAGE_NAME }}.raw.zst"* > "${{ steps.variables.outputs.IMAGE_NAME }}.sha512"
-        working-directory: mkosi.output
+        run: sha512sum "${{ steps.build_summary.outputs.Output }}.manifest" "${{ steps.build_summary.outputs.Output }}.qcow2"* "${{ steps.build_summary.outputs.Output }}.raw.zst"* > "${{ steps.build_summary.outputs.Output }}.sha512"
+        working-directory: "${{ steps.build_summary.outputs.OutputDirectory }}"
       - name: Clean previous release
         if: steps.last_release.outcome == 'success'
-        run: gh release delete latest-${{ steps.variables.outputs.IMAGE_ID }} --cleanup-tag --yes
+        run: gh release delete latest-${{ steps.build_summary.outputs.Output }} --cleanup-tag --yes
         env:
           GH_TOKEN: ${{ github.token }}
-      - name: Release ${{ steps.variables.outputs.IMAGE_NAME }}
+      - name: Release ${{ steps.build_summary.outputs.Output }}
         if: steps.do_releases_match.outputs.value == 'false' || steps.last_release.outcome != 'success'
         uses: softprops/action-gh-release@v2
         with:
           files: |2
-            mkosi.output/${{ steps.variables.outputs.IMAGE_NAME }}.sha512
-            mkosi.output/${{ steps.variables.outputs.IMAGE_NAME }}.manifest
-            mkosi.output/${{ steps.variables.outputs.IMAGE_NAME }}.qcow2.*
-            mkosi.output/${{ steps.variables.outputs.IMAGE_NAME }}.raw.zst.*
+            ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.Output }}.sha512
+            ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.Output }}.manifest
+            ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.Output }}.qcow2.*
+            ${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.Output }}.raw.zst.*
           name: ${{ steps.variables.outputs.IMAGE_NAME }}
-          tag_name: latest-${{ steps.variables.outputs.IMAGE_ID }}
+          tag_name: latest-${{ steps.build_summary.outputs.Output }}
           make_latest: true
           draft: false
       - name: Make mkosi.cache and mkosi.output cachable for GitHub

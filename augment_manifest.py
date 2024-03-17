@@ -10,9 +10,9 @@ if __name__ == "__main__":
     path_list: list[Path] = [
         Path("lvm-system.csv"),
         *Path("mkosi.conf.d").rglob("*"),
-        *Path("mkosi.extra").rglob("*"),
+        *Path("mkosi.extra.d").rglob("*"),
         Path("mkosi.postinst.chroot"),
-        Path("mkosi.finalize")
+        Path("create_disk_image.sh")
     ]
     manifest: dict = {}
     files: list[dict[str, str]] = []
