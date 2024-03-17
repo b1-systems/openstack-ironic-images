@@ -98,11 +98,11 @@ jobs:
         with:
           file_path: build_summary.json
         id: build_summary
-      - name: Cache/Restore mkosi.workspace
+      - name: Cache/Restore /var/tmp/mkosi
         uses: actions/cache@v4
         with:
-          path: mkosi.workspace
-          key: ${{ steps.variables.outputs.IMAGE_ID }}-mkosi.workspace
+          path: /var/tmp/mkosi
+          key: ${{ steps.variables.outputs.IMAGE_ID }}-/var/tmp/mkosi
       - name: Cache/Restore mkosi.cache
         uses: actions/cache@v4
         with:
