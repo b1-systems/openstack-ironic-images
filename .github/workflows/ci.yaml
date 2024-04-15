@@ -139,7 +139,7 @@ jobs:
           "${GITHUB_WORKSPACE}/augment_manifest.py"
           "${{ steps.build_summary.outputs.OutputDirectory }}/${{ steps.build_summary.outputs.Output }}.manifest"
       - name: Get latest release manifest
-        uses: robinraju/release-downloader@v1.9
+        uses: robinraju/release-downloader@v1.10
         with:
           tag: latest-${{ steps.build_summary.outputs.Output }}
           latest: false
