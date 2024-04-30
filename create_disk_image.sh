@@ -76,7 +76,7 @@ printf 'Created raw file %s\n' "$RAW_FILE"
 
 sgdisk -n '1:0:+200M' -c '1:OSISM_HV_EFI_PARTITION' -t '1:c12a7328-f81f-11d2-ba4b-00a0c93ec93b' \
     -n '2:0:+1G' -c '2:OSISM_HV_BOOT_PARTITION' -t '2:bc13c2ff-59e6-4262-a352-b275fd6f7172' \
-    -N '3' -c '3:OSISM_HV_LVM_PARTITION' -t '3:8e00' \
+    -N '3' -c '3:OSISM_HV_LVM_PARTITION' -t '3:0fc63daf-8483-4772-8e79-3d69d8477de4' \
     "$RAW_FILE"
 
 LOOP_DEVICE="$(losetup -P -f --show "$RAW_FILE")"
