@@ -5,6 +5,7 @@ LABEL=home /home ext4 defaults,noauto,x-systemd.automount 0 2
 LABEL=var /var ext4 defaults,noauto,x-systemd.automount 0 2
 LABEL=var-tmp /var/tmp ext4 defaults,noauto,x-systemd.automount 0 2
 LABEL=var-lib-docker /var/lib/docker ext4 defaults,noauto,x-systemd.growfs,x-systemd.automount 0 2
+LABEL=var-log /var/log ext4 defaults,noauto,x-systemd.automount 0 2
 LABEL=var-log-audit /var/log/audit ext4 defaults,noauto,x-systemd.automount 0 2
 
 # extra volumes for docker container
